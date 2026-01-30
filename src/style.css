@@ -176,7 +176,8 @@ body {
 }
 
 .markdown-content {
-  max-width: 880px;
+  width: 100%;
+  max-width: none;
   margin: 0 auto;
   background: #ffffff;
   padding: 64px 80px;
