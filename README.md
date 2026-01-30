@@ -76,7 +76,7 @@ pnpm install
 pnpm dev
 ```
 
-访问 http://localhost:5000，修改代码后自动热更新。
+访问 http://localhost:3000，修改代码后自动热更新。
 
 ### 本地测试 CLI
 
