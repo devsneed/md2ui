@@ -33,10 +33,10 @@ md2ui
 指定端口：
 
 ```bash
-md2ui -p 3000
+md2ui -p 8080
 ```
 
-访问 http://localhost:5000 查看文档。
+访问 http://localhost:3000 查看文档（默认端口 3000）。
 
 ### 文档组织
 

@@ -15,11 +15,11 @@ const userDir = process.cwd()
 
 // 解析命令行参数
 const args = process.argv.slice(2)
-let port = 5000
+let port = 3000
 
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '-p' || args[i] === '--port') {
-    port = parseInt(args[i + 1]) || 5000
+    port = parseInt(args[i + 1]) || 3000
   }
 }
 
