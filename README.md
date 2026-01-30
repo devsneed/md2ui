@@ -81,8 +81,8 @@ pnpm dev
 ### 本地测试 CLI
 
 ```bash
-# 链接到全局
-pnpm link --global
+# 安装到全局
+npm install -g .
 
 # 在任意目录测试
 cd /path/to/test/docs
