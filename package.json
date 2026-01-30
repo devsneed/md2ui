@@ -1,6 +1,6 @@
 {
   "name": "md2ui",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "将本地 Markdown 文档转换为美观的 HTML 页面",
   "author": "",
