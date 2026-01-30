@@ -1,58 +1,68 @@
 # md2ui
 
-一个基于 Vue 3 的文档渲染系统，将本地 Markdown 文档转换为美观的 HTML 页面。
+一个轻量级的文档渲染系统，将本地 Markdown 文档转换为美观的 HTML 页面。
 
-## 功能特性
+## 核心特性
 
-- 📚 **文档管理** - 自动扫描并构建文档目录树
-- 🎨 **美观界面** - 三栏布局（导航栏、内容区、目录）
-- 📝 **Markdown 渲染** - 支持 GFM 语法和代码高亮
-- 📊 **Mermaid 图表** - 支持流程图、时序图等
-- 🔍 **目录导航** - 自动提取文档大纲
-- 📱 **响应式设计** - 适配不同屏幕尺寸
-- ⚡ **快速加载** - 基于 Vite 构建
+- 自动化目录 - 扫描文档文件夹，自动生成多级导航树
+- 三栏布局 - 左侧导航、中间内容、右侧大纲
+- Markdown 增强 - 支持 GFM 语法、代码高亮、Mermaid 图表
+- 交互优化 - 可拖拽调整宽度、折叠侧边栏、阅读进度显示
 
-## 技术栈
+## 安装使用
 
-- Vue 3 - 渐进式 JavaScript 框架
-- Vite - 下一代前端构建工具
-- Marked - Markdown 解析器
-- Mermaid - 图表渲染库
-- Lucide Vue - 图标库
-
-## 项目结构
-
-```
-md2ui/
-├── public/                    # 静态资源
-│   ├── README.md             # 首页内容
-│   └── docs/                 # 文档目录
-│       ├── 00-项目概览.md
-│       ├── 代码结构/
-│       └── 架构设计/
-├── src/
-│   ├── api/                  # API 接口
-│   │   └── docs.js          # 文档列表获取
-│   ├── components/           # 组件
-│   │   ├── TreeNode.vue     # 树形节点
-│   │   └── TableOfContents.vue  # 目录组件
-│   ├── composables/          # 组合式函数
-│   │   ├── useMarkdown.js   # Markdown 渲染
-│   │   ├── useScroll.js     # 滚动处理
-│   │   └── useResize.js     # 拖拽调整
-│   ├── App.vue              # 主组件
-│   ├── main.js              # 入口文件
-│   └── style.css            # 全局样式
-├── index.html               # HTML 模板
-├── vite.config.js           # Vite 配置
-└── package.json             # 项目配置
-```
-
-## 快速开始
-
-### 安装依赖
+### 从 npm 安装（推荐）
 
 ```bash
+npm install -g md2ui
+```
+
+### 使用方法
+
+在包含 `.md` 文件的目录下运行：
+
+```bash
+cd /path/to/your/docs
+md2ui
+```
+
+指定端口：
+
+```bash
+md2ui -p 3000
+```
+
+访问 http://localhost:5000 查看文档。
+
+### 文档组织
+
+```
+your-docs/
+├── README.md              # 首页内容
+├── 00-快速开始.md
+├── 01-功能特性.md
+└── 02-进阶指南/
+    ├── 01-目录结构.md
+    └── 02-自定义配置.md
+```
+
+文件命名规则：
+- 使用 `序号-名称.md` 格式控制排序，如 `01-快速开始.md`
+- 文件夹也支持序号前缀，如 `02-进阶指南/`
+- 序号越小越靠前
+
+## 开发维护
+
+如果你想参与开发或自定义功能：
+
+### 环境准备
+
+```bash
+# 克隆项目
+git clone https://github.com/user/md2ui.git
+cd md2ui
+
+# 安装依赖
 pnpm install
 ```
 
@@ -62,169 +72,37 @@ pnpm install
 pnpm dev
 ```
 
-访问 http://localhost:3000
+访问 http://localhost:5000，修改代码后自动热更新。
 
-### 构建生产版本
-
-```bash
-pnpm build
-```
-
-### 预览生产版本
+### 本地测试 CLI
 
 ```bash
-pnpm preview
+# 链接到全局
+pnpm link --global
+
+# 在任意目录测试
+cd /path/to/test/docs
+md2ui
 ```
 
-## 文档组织
-
-### 目录结构
-
-文档放在 `public/docs/` 目录下，支持多级嵌套：
+### 项目结构
 
 ```
-public/docs/
-├── 00-项目概览.md
-├── 代码结构/
-│   ├── 业务层/
-│   │   └── service包说明.md
-│   └── 基础设施/
-│       └── config包说明.md
-└── 架构设计/
-    └── 01-核心业务流程.md
+md2ui/
+├── bin/md2ui.js           # CLI 入口
+├── src/
+│   ├── App.vue            # 主组件
+│   ├── api/docs.js        # 文档列表获取
+│   ├── components/        # Vue 组件
+│   └── composables/       # 组合式函数
+├── public/docs/           # 示例文档
+└── vite.config.js         # Vite 配置
 ```
 
-### 文件命名规范
+### 发布新版本
 
-- 使用 `序号-名称.md` 格式，如 `00-项目概览.md`
-- 序号用于控制排序，数字越小越靠前
-- 文件夹也可以使用序号前缀
-
-### 首页内容
-
-首页内容来自 `public/README.md` 文件，可以自定义项目介绍、快速开始等内容。
-
-## 功能说明
-
-### 左侧导航栏
-
-- 显示文档目录树
-- 支持文件夹展开/折叠
-- 支持全部展开/收起
-- 可拖拽调整宽度
-- 可收起/展开
-
-### 中间内容区
-
-- 渲染 Markdown 文档
-- 支持代码高亮
-- 支持 Mermaid 图表
-- 显示阅读进度
-- 返回顶部按钮
-
-### 右侧目录
-
-- 自动提取文档标题
-- 支持多级标题
-- 点击跳转到对应位置
-- 高亮当前阅读位置
-- 可拖拽调整宽度
-- 可收起/展开
-
-## 自定义配置
-
-### 修改端口
-
-编辑 `vite.config.js`：
-
-```javascript
-export default defineConfig({
-  server: {
-    port: 3000  // 修改为你想要的端口
-  }
-})
-```
-
-### 修改标题
-
-编辑 `index.html`：
-
-```html
-<title>你的项目名称</title>
-```
-
-编辑 `src/App.vue` 中的 logo 部分：
-
-```vue
-<div class="logo">
-  <h2>📚 你的项目名称</h2>
-</div>
-```
-
-或修改 `src/components/Logo.vue` 中的 logo-text。
-
-### 自定义样式
-
-编辑 `src/style.css` 文件，可以修改颜色、字体、间距等样式。
-
-## 部署
-
-### 静态部署
-
-构建后将 `dist` 目录部署到任何静态服务器：
-
-```bash
-pnpm build
-```
-
-### Nginx 配置示例
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-    root /path/to/dist;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
-
-## 开发指南
-
-### 添加新功能
-
-1. 在 `src/composables/` 创建组合式函数
-2. 在 `src/components/` 创建 Vue 组件
-3. 在 `src/App.vue` 中引入使用
-
-### 代码规范
-
-- 使用 Vue 3 Composition API
-- 组件使用 `<script setup>` 语法
-- 提取可复用逻辑到 composables
-- 保持组件职责单一
-
-## 常见问题
-
-### 文档不显示？
-
-检查文档路径是否正确，确保文件在 `public/docs/` 目录下。
-
-### Mermaid 图表不渲染？
-
-确保代码块使用 ` ```mermaid ` 标记，并检查图表语法是否正确。
-
-### 样式显示异常？
-
-清除浏览器缓存，或使用无痕模式测试。
+参考 [发布文档](docs/发布到%20npm%20仓库.md)
 
 ## 许可证
 
 MIT License
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！
