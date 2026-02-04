@@ -40,6 +40,28 @@ body {
   justify-content: space-between;
 }
 
+.logo-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.github-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: #ffffff;
+  background: #3eaf7c;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.github-link:hover {
+  background: #2d8a5e;
+}
+
 .sidebar-toggle {
   display: flex;
   align-items: center;
@@ -117,8 +139,8 @@ body {
 }
 
 .nav-item.active {
-  background: #ddf4ff;
-  color: #0969da;
+  background: #e6f7e6;
+  color: #3eaf7c;
   font-weight: 500;
 }
 
@@ -134,7 +156,7 @@ body {
 }
 
 .nav-item.active .nav-icon {
-  color: #0969da;
+  color: #3eaf7c;
 }
 
 .chevron-icon {
@@ -268,7 +290,7 @@ body {
 }
 
 .markdown-content a {
-  color: #0969da;
+  color: #3eaf7c;
   text-decoration: none;
 }
 
@@ -463,12 +485,12 @@ body {
 }
 
 .toc-item:hover {
-  color: #0969da;
+  color: #3eaf7c;
 }
 
 .toc-item.active {
-  color: #0969da;
-  border-left-color: #0969da;
+  color: #3eaf7c;
+  border-left-color: #3eaf7c;
   font-weight: 500;
 }
 
@@ -507,7 +529,7 @@ body {
 }
 
 .resizer:active {
-  background: #0969da;
+  background: #3eaf7c;
 }
 
 /* 收起/展开按钮 */

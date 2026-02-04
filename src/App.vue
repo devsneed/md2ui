@@ -2,7 +2,12 @@
   <div class="container">
     <aside v-if="!sidebarCollapsed" class="sidebar" :style="{ width: sidebarWidth + 'px' }">
       <div class="logo">
-        <Logo @go-home="loadReadme" />
+        <div class="logo-group">
+          <Logo @go-home="loadReadme" />
+          <a href="https://github.com/devsneed/md2ui" target="_blank" class="github-link" title="GitHub">
+            <Github :size="14" />
+          </a>
+        </div>
         <button class="sidebar-toggle" @click="sidebarCollapsed = true" title="收起导航">
           <PanelLeftClose :size="16" />
         </button>
@@ -53,7 +58,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ChevronsDownUp, ChevronsUpDown, ArrowUp, PanelLeftOpen, PanelLeftClose, PanelRightOpen, PanelRightClose } from 'lucide-vue-next'
+import { ChevronsDownUp, ChevronsUpDown, ArrowUp, PanelLeftOpen, PanelLeftClose, PanelRightOpen, PanelRightClose, Github } from 'lucide-vue-next'
 import Logo from './components/Logo.vue'
 import TreeNode from './components/TreeNode.vue'
 import TableOfContents from './components/TableOfContents.vue'
@@ -161,8 +166,46 @@ function handleContentClick(event) {
   }
 }
 
+// 查找第一个文档
+function findFirstDoc(items) {
+  for (const item of items) {
+    if (item.type === 'file') return item
+    if (item.type === 'folder' && item.children) {
+      const found = findFirstDoc(item.children)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+// 显示无文档提示
+function showEmptyMessage() {
+  renderMarkdown(`# 当前目录没有 Markdown 文档
+
+请在当前目录下添加 \`.md\` 文件，然后刷新页面。
+
+## 文档组织示例
+
+\`\`\`
+your-docs/
+├── 00-快速开始.md
+├── 01-功能特性.md
+└── 02-进阶指南/
+    ├── 01-目录结构.md
+    └── 02-自定义配置.md
+\`\`\`
+`)
+}
+
 onMounted(async () => {
   await loadDocsList()
-  await loadReadme()
+  
+  // 如果有文档，加载第一个；否则显示提示
+  const firstDoc = findFirstDoc(docsList.value)
+  if (firstDoc) {
+    await loadDoc(firstDoc.key)
+  } else {
+    showEmptyMessage()
+  }
 })
 </script>

@@ -1,5 +1,7 @@
 # md2ui
 
+[![GitHub](https://img.shields.io/badge/GitHub-devsneed%2Fmd2ui-blue?logo=github)](https://github.com/devsneed/md2ui)
+
 一个轻量级的文档渲染系统，将本地 Markdown 文档转换为美观的 HTML 页面。
 
 ## 核心特性
@@ -63,7 +65,7 @@ your-docs/
 
 ```bash
 # 克隆项目
-git clone https://github.com/user/md2ui.git
+git clone https://github.com/devsneed/md2ui.git
 cd md2ui
 
 # 安装依赖

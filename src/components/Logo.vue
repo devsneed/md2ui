@@ -21,15 +21,15 @@ defineEmits(['go-home'])
   gap: 10px;
   color: #111827;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.15s;
 }
 
 .logo-container:hover {
-  opacity: 0.7;
+  color: #3eaf7c;
 }
 
 .logo-container:active {
-  opacity: 0.5;
+  transform: scale(0.96);
 }
 
 .logo-icon {
