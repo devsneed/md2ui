@@ -3,7 +3,7 @@
     <aside v-if="!sidebarCollapsed" class="sidebar" :style="{ width: sidebarWidth + 'px' }">
       <div class="logo">
         <div class="logo-group">
-          <Logo @go-home="loadReadme" />
+          <Logo @go-home="loadFirstDoc" />
           <a href="https://github.com/devsneed/md2ui" target="_blank" class="github-link" title="GitHub">
             <Github :size="14" />
           </a>
@@ -58,7 +58,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ChevronsDownUp, ChevronsUpDown, ArrowUp, PanelLeftOpen, PanelLeftClose, PanelRightOpen, PanelRightClose, Github } from 'lucide-vue-next'
+import { ChevronsDownUp, ChevronsUpDown, ArrowUp, PanelLeftOpen, PanelLeftClose, PanelRightOpen, Github } from 'lucide-vue-next'
 import Logo from './components/Logo.vue'
 import TreeNode from './components/TreeNode.vue'
 import TableOfContents from './components/TableOfContents.vue'
@@ -83,16 +83,11 @@ async function loadDocsList() {
   docsList.value = await getDocsList()
 }
 
-async function loadReadme() {
-  currentDoc.value = ''
-  try {
-    const response = await fetch('/README.md')
-    if (response.ok) {
-      const content = await response.text()
-      await renderMarkdown(content)
-    }
-  } catch (error) {
-    console.error('加载首页失败:', error)
+// 加载第一个文档
+function loadFirstDoc() {
+  const firstDoc = findFirstDoc(docsList.value)
+  if (firstDoc) {
+    loadDoc(firstDoc.key)
   }
 }
 

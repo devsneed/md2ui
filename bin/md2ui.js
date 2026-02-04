@@ -10,16 +10,19 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const pkgRoot = resolve(__dirname, '..')
 
+// 导入共享配置
+const { config } = await import(resolve(pkgRoot, 'src/config.js'))
+
 // 用户执行命令的目录
 const userDir = process.cwd()
 
 // 解析命令行参数
 const args = process.argv.slice(2)
-let port = 3000
+let port = config.defaultPort
 
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '-p' || args[i] === '--port') {
-    port = parseInt(args[i + 1]) || 3000
+    port = parseInt(args[i + 1]) || config.defaultPort
   }
 }
 
@@ -70,7 +73,7 @@ function scanDocs(dir, basePath = '', level = 0) {
           order: match ? parseInt(match[1]) : 999,
           type: 'folder',
           level,
-          expanded: false,
+          expanded: config.folderExpanded,
           children
         })
       }

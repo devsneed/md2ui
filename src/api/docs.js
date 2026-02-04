@@ -1,3 +1,5 @@
+import { config } from '../config.js'
+
 // 构建目录树结构（支持多层嵌套）
 function buildTree(files) {
   const root = { children: [] }
@@ -23,7 +25,7 @@ function buildTree(files) {
           order: match ? parseInt(match[1]) : 999,
           level: i,
           children: [],
-          expanded: false
+          expanded: config.folderExpanded
         }
         currentLevel.children.push(folder)
       }
