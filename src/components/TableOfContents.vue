@@ -1,8 +1,13 @@
 <template>
   <aside class="toc-sidebar" v-if="tocItems.length > 0 && !collapsed" :style="{ width: width + 'px' }">
     <div class="toc-header">
-      <List :size="16" />
-      <span>目录</span>
+      <div class="toc-title">
+        <List :size="16" />
+        <span>目录</span>
+      </div>
+      <button class="toc-toggle" @click="$emit('toggle')" title="收起目录">
+        <PanelRightClose :size="16" />
+      </button>
     </div>
     <nav class="toc-nav">
       <a 
@@ -19,7 +24,7 @@
 </template>
 
 <script setup>
-import { List } from 'lucide-vue-next'
+import { List, PanelRightClose } from 'lucide-vue-next'
 
 defineProps({
   tocItems: {
@@ -40,5 +45,5 @@ defineProps({
   }
 })
 
-defineEmits(['scroll-to'])
+defineEmits(['scroll-to', 'toggle'])
 </script>

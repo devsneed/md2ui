@@ -3,6 +3,9 @@
     <aside v-if="!sidebarCollapsed" class="sidebar" :style="{ width: sidebarWidth + 'px' }">
       <div class="logo">
         <Logo @go-home="loadReadme" />
+        <button class="sidebar-toggle" @click="sidebarCollapsed = true" title="收起导航">
+          <PanelLeftClose :size="16" />
+        </button>
       </div>
       <nav class="nav-menu">
         <div class="nav-section">
@@ -30,19 +33,13 @@
     <button v-if="sidebarCollapsed" class="expand-btn expand-btn-left" @click="sidebarCollapsed = false" title="展开导航">
       <PanelLeftOpen :size="16" />
     </button>
-    <button v-else class="collapse-btn collapse-btn-left" @click="sidebarCollapsed = true" title="收起导航">
-      <PanelLeftClose :size="16" />
-    </button>
     <main class="content" @scroll="handleScroll" @click="handleContentClick">
       <article class="markdown-content" v-html="htmlContent"></article>
     </main>
     <div v-if="!tocCollapsed && tocItems.length > 0" class="resizer resizer-right" @mousedown="startResize('right', $event)"></div>
-    <TableOfContents :tocItems="tocItems" :activeHeading="activeHeading" :collapsed="tocCollapsed" :width="tocWidth" @scroll-to="scrollToHeading" />
+    <TableOfContents :tocItems="tocItems" :activeHeading="activeHeading" :collapsed="tocCollapsed" :width="tocWidth" @toggle="tocCollapsed = !tocCollapsed" @scroll-to="scrollToHeading" />
     <button v-if="tocCollapsed && tocItems.length > 0" class="expand-btn expand-btn-right" @click="tocCollapsed = false" title="展开目录">
       <PanelRightOpen :size="16" />
-    </button>
-    <button v-else-if="tocItems.length > 0" class="collapse-btn collapse-btn-right" @click="tocCollapsed = true" title="收起目录">
-      <PanelRightClose :size="16" />
     </button>
     <transition name="fade">
       <button v-if="showBackToTop" class="back-to-top" @click="scrollToTop" title="返回顶部">

@@ -70,7 +70,7 @@ function scanDocs(dir, basePath = '', level = 0) {
           order: match ? parseInt(match[1]) : 999,
           type: 'folder',
           level,
-          expanded: true,
+          expanded: false,
           children
         })
       }
