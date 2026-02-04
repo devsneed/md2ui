@@ -132,6 +132,9 @@ body {
   font-size: 14px;
   border-radius: 6px;
   margin: 1px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nav-item:hover {
@@ -142,6 +145,12 @@ body {
   background: #e6f7e6;
   color: #3eaf7c;
   font-weight: 500;
+}
+
+.nav-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* 图标样式 */
@@ -164,7 +173,7 @@ body {
 }
 
 .folder-icon {
-  color: #54aeff;
+  color: #3eaf7c;
 }
 
 .file-icon {
@@ -172,7 +181,7 @@ body {
 }
 
 .home-icon {
-  color: #0969da;
+  color: #3eaf7c;
 }
 
 /* 文件夹样式 */
@@ -399,9 +408,9 @@ body {
 }
 
 .back-to-top:hover {
-  background: #f6f8fa;
-  color: #1f2328;
-  border-color: #1f2328;
+  background: #e6f7e6;
+  color: #3eaf7c;
+  border-color: #3eaf7c;
 }
 
 .progress-text {
