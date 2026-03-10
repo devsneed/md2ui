@@ -112,8 +112,10 @@ function handleOverlayClick(event) {
 function handleWheel(event) {
   event.preventDefault()
   
-  const delta = event.deltaY > 0 ? -scaleStep : scaleStep
-  const newScale = Math.max(minScale, Math.min(maxScale, scale.value + delta))
+  // 使用比例缩放，每次滚轮缩放 2%，体感更平滑
+  const zoomFactor = 0.02
+  const direction = event.deltaY > 0 ? -1 : 1
+  const newScale = Math.max(minScale, Math.min(maxScale, scale.value * (1 + direction * zoomFactor)))
   
   if (newScale !== scale.value) {
     scale.value = newScale
