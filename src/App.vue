@@ -57,8 +57,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { ChevronsDownUp, ChevronsUpDown, ArrowUp, PanelLeftOpen, PanelLeftClose, PanelRightOpen, Github } from 'lucide-vue-next'
+import MD5 from 'crypto-js/md5'
 import Logo from './components/Logo.vue'
 import TreeNode from './components/TreeNode.vue'
 import TableOfContents from './components/TableOfContents.vue'
@@ -76,7 +77,24 @@ const zoomVisible = ref(false)
 const zoomContent = ref('')
 
 const { htmlContent, tocItems, renderMarkdown } = useMarkdown()
-const { scrollProgress, showBackToTop, activeHeading, handleScroll, scrollToHeading, scrollToTop } = useScroll()
+const { scrollProgress, showBackToTop, activeHeading, handleScroll: _handleScroll, scrollToHeading: _scrollToHeading, scrollToTop } = useScroll()
+
+// 包装滚动处理，同步锚点到 URL
+function handleScroll(e) {
+  _handleScroll(e)
+  // 滚动时更新 URL 锚点
+  if (activeHeading.value) {
+    updateHash(activeHeading.value)
+  } else {
+    updateHash('')
+  }
+}
+
+// 包装目录点击，同步锚点到 URL
+function scrollToHeading(id) {
+  _scrollToHeading(id)
+  updateHash(id)
+}
 const { sidebarWidth, tocWidth, startResize } = useResize()
 
 async function loadDocsList() {
@@ -91,8 +109,21 @@ function loadFirstDoc() {
   }
 }
 
+// 根据 key 生成 hash
+function docHash(key) {
+  return MD5(key).toString()
+}
+
+// 更新 URL hash（文档hash + 可选锚点）
+function updateHash(anchor) {
+  if (!currentDoc.value) return
+  const base = docHash(currentDoc.value)
+  window.location.hash = anchor ? `${base}/${anchor}` : base
+}
+
 async function loadDoc(key) {
   currentDoc.value = key
+  updateHash('')
   const doc = findDoc(docsList.value, key)
   if (!doc) return
   try {
@@ -192,10 +223,59 @@ your-docs/
 `)
 }
 
+// 根据 hash 查找文档
+function findDocByHash(items, hash) {
+  for (const item of items) {
+    if (item.type === 'file' && docHash(item.key) === hash) return item
+    if (item.type === 'folder' && item.children) {
+      const found = findDocByHash(item.children, hash)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+// 展开文档所在的所有父级文件夹
+function expandParents(items, targetKey) {
+  for (const item of items) {
+    if (item.type === 'file' && item.key === targetKey) return true
+    if (item.type === 'folder' && item.children) {
+      if (expandParents(item.children, targetKey)) {
+        item.expanded = true
+        return true
+      }
+    }
+  }
+  return false
+}
+
 onMounted(async () => {
   await loadDocsList()
   
-  // 如果有文档，加载第一个；否则显示提示
+  const rawHash = window.location.hash.replace('#', '')
+  const [hash, anchor] = rawHash.includes('/') 
+    ? [rawHash.split('/')[0], rawHash.split('/').slice(1).join('/')]
+    : [rawHash, '']
+  
+  if (hash) {
+    const doc = findDocByHash(docsList.value, hash)
+    if (doc) {
+      expandParents(docsList.value, doc.key)
+      await loadDoc(doc.key)
+      // 恢复锚点位置
+      if (anchor) {
+        await nextTick()
+        // 等待 DOM 渲染完成后再滚动
+        setTimeout(() => {
+          _scrollToHeading(anchor)
+          updateHash(anchor)
+        }, 100)
+      }
+      return
+    }
+  }
+  
+  // 没有 hash 或找不到对应文档，加载第一个
   const firstDoc = findFirstDoc(docsList.value)
   if (firstDoc) {
     await loadDoc(firstDoc.key)
