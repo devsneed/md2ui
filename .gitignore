@@ -2,6 +2,7 @@
 .vscode
 .idea
 *.iml
+.kiro
 
 # nodejs
 node_modules

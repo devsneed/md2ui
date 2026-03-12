@@ -4,6 +4,7 @@ import { createServer } from 'vite'
 import { fileURLToPath } from 'url'
 import { dirname, resolve } from 'path'
 import fs from 'fs'
+import { exec } from 'child_process'
 
 // 获取 CLI 工具所在目录（即 md2ui 包的安装目录）
 const __filename = fileURLToPath(import.meta.url)
@@ -55,7 +56,7 @@ function scanDocs(dir, basePath = '', level = 0) {
   if (!fs.existsSync(dir)) return items
   
   const entries = fs.readdirSync(dir, { withFileTypes: true })
-    .filter(e => !e.name.startsWith('.') && e.name !== 'node_modules')
+    .filter(e => e.name !== 'node_modules')
     .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
 
   for (const entry of entries) {
@@ -129,7 +130,7 @@ function hasMdFiles(dir) {
   if (!fs.existsSync(dir)) return false
   
   const entries = fs.readdirSync(dir, { withFileTypes: true })
-    .filter(e => !e.name.startsWith('.') && e.name !== 'node_modules')
+    .filter(e => e.name !== 'node_modules')
   
   for (const entry of entries) {
     if (entry.isFile() && entry.name.endsWith('.md')) {
@@ -166,6 +167,13 @@ async function start() {
 
   await server.listen()
   server.printUrls()
+
+  // 自动打开浏览器
+  const address = server.httpServer.address()
+  const url = `http://localhost:${address.port}`
+  const platform = process.platform
+  const cmd = platform === 'darwin' ? 'open' : platform === 'win32' ? 'start' : 'xdg-open'
+  exec(`${cmd} ${url}`)
 }
 
 start().catch(console.error)
