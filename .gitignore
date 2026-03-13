@@ -11,10 +11,13 @@ package-lock.json
 pnpm-lock.yaml
 
 # OS
-.DS_Store
+**/.DS_Store
 
 # log
 *.log
 
 # 发布脚本（包含敏感信息）
 publish.sh
+
+#本地MCP Server数据目录
+screenshots

@@ -43,18 +43,10 @@ export function useScroll() {
 
   // 滚动到指定标题
   function scrollToHeading(id) {
-    const element = document.getElementById(id)
-    const content = document.querySelector('.content')
-    
-    if (element && content) {
-      const contentRect = content.getBoundingClientRect()
-      const elementRect = element.getBoundingClientRect()
-      const offsetTop = elementRect.top - contentRect.top + content.scrollTop
-      
-      content.scrollTo({
-        top: offsetTop - 20,
-        behavior: 'smooth'
-      })
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      activeHeading.value = id
     }
   }
 

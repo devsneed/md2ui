@@ -19,13 +19,13 @@ defineEmits(['go-home'])
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #111827;
+  color: var(--color-text);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .logo-container:hover {
-  color: #3eaf7c;
+  color: var(--color-accent);
 }
 
 .logo-container:active {
