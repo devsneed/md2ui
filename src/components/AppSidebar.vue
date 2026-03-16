@@ -12,11 +12,7 @@
         </a>
       </div>
       <div class="logo-actions">
-        <button class="theme-toggle" @click="$emit('toggle-theme')" :title="themeTitle">
-          <Sun v-if="mode === 'light'" :size="14" />
-          <Moon v-else-if="mode === 'dark'" :size="14" />
-          <Monitor v-else :size="14" />
-        </button>
+        <ThemeToggle :mode="mode" :size="14" @toggle-theme="$emit('toggle-theme')" />
         <button v-if="isMobile" class="sidebar-toggle" @click="$emit('close-drawer')" title="关闭菜单">
           <X :size="16" />
         </button>
@@ -70,9 +66,10 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Github, Sun, Moon, Monitor, PanelLeftClose, X, Search, ChevronsDownUp, ChevronsUpDown, Filter } from 'lucide-vue-next'
+import { Github, PanelLeftClose, X, Search, ChevronsDownUp, ChevronsUpDown, Filter } from 'lucide-vue-next'
 import Logo from './Logo.vue'
 import TreeNode from './TreeNode.vue'
+import ThemeToggle from './ThemeToggle.vue'
 
 const props = defineProps({
   docsList: { type: Array, default: () => [] },
@@ -90,12 +87,6 @@ defineEmits([
 ])
 
 const filterText = ref('')
-
-const themeTitle = computed(() => {
-  if (props.mode === 'light') return '切换暗色'
-  if (props.mode === 'dark') return '跟随系统'
-  return '切换亮色'
-})
 
 // 递归过滤文档树：保留匹配的文件和包含匹配文件的文件夹
 function filterTree(items, keyword) {

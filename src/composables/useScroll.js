@@ -1,9 +1,11 @@
 import { ref } from 'vue'
 
+// 单例状态，确保多处调用共享同一份
+const scrollProgress = ref(0)
+const showBackToTop = ref(false)
+const activeHeading = ref('')
+
 export function useScroll() {
-  const scrollProgress = ref(0)
-  const showBackToTop = ref(false)
-  const activeHeading = ref('')
 
   // 监听滚动
   function handleScroll(e) {

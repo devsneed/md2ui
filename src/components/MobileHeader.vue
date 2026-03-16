@@ -8,29 +8,19 @@
       <button class="mobile-action-btn" @click="$emit('open-search')" title="搜索">
         <Search :size="18" />
       </button>
-      <button class="mobile-action-btn" @click="$emit('toggle-theme')" :title="themeTitle">
-        <Sun v-if="mode === 'light'" :size="18" />
-        <Moon v-else-if="mode === 'dark'" :size="18" />
-        <Monitor v-else :size="18" />
-      </button>
+      <ThemeToggle :mode="mode" :size="18" @toggle-theme="$emit('toggle-theme')" />
     </div>
   </header>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { Menu, Search, Sun, Moon, Monitor } from 'lucide-vue-next'
+import { Menu, Search } from 'lucide-vue-next'
 import Logo from './Logo.vue'
+import ThemeToggle from './ThemeToggle.vue'
 
-const props = defineProps({
+defineProps({
   mode: { type: String, default: 'system' }
 })
 
 defineEmits(['open-drawer', 'go-home', 'open-search', 'toggle-theme'])
-
-const themeTitle = computed(() => {
-  if (props.mode === 'light') return '切换暗色'
-  if (props.mode === 'dark') return '跟随系统'
-  return '切换亮色'
-})
 </script>

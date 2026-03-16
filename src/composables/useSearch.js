@@ -3,6 +3,8 @@ import MiniSearch from 'minisearch'
 
 // 搜索索引实例
 let searchIndex = null
+// 缓存文档列表引用，用于懒加载
+let pendingDocsList = null
 
 // 扁平化文档树，提取所有文件节点
 function flattenDocs(items, result = []) {
@@ -15,15 +17,31 @@ function flattenDocs(items, result = []) {
   return result
 }
 
-export function useSearch() {
-  const searchVisible = ref(false)
-  const searchQuery = ref('')
-  const searchResults = ref([])
-  const searchReady = ref(false)
+// 单例状态，确保多处调用共享同一份
+const searchVisible = ref(false)
+const searchQuery = ref('')
+const searchResults = ref([])
+const searchReady = ref(false)
+const indexBuilding = ref(false)
 
-  // 构建搜索索引：获取所有文档内容
-  async function buildIndex(docsList) {
-    const docs = flattenDocs(docsList)
+export function useSearch() {
+
+  // 注册文档列表（不立即构建索引，等用户打开搜索时再构建）
+  function buildIndex(docsList) {
+    pendingDocsList = docsList
+    // 如果索引已存在，标记需要重建
+    if (searchIndex) {
+      searchIndex = null
+      searchReady.value = false
+    }
+  }
+
+  // 实际构建搜索索引
+  async function ensureIndex() {
+    if (searchReady.value || indexBuilding.value || !pendingDocsList) return
+    indexBuilding.value = true
+
+    const docs = flattenDocs(pendingDocsList)
     const documents = []
 
     for (const doc of docs) {
@@ -53,7 +71,6 @@ export function useSearch() {
       },
       // 中文分词：按标点、空格、换行分割
       tokenize: (text) => {
-        // 先按常规分隔符分词
         const tokens = text.split(/[\s\n\r\t,.;:!?，。；：！？、（）()【】\[\]{}""''""]+/)
           .filter(t => t.length > 0)
         // 对中文文本额外做 bigram 分词
@@ -71,6 +88,7 @@ export function useSearch() {
 
     searchIndex.addAll(documents)
     searchReady.value = true
+    indexBuilding.value = false
   }
 
   // 执行搜索
@@ -88,8 +106,13 @@ export function useSearch() {
     }))
   }
 
-  // 打开/关闭搜索面板
-  function openSearch() { searchVisible.value = true }
+  // 打开搜索面板（触发懒加载索引构建）
+  async function openSearch() {
+    searchVisible.value = true
+    await ensureIndex()
+  }
+
+  // 关闭搜索面板
   function closeSearch() {
     searchVisible.value = false
     searchQuery.value = ''
@@ -101,6 +124,7 @@ export function useSearch() {
     searchQuery,
     searchResults,
     searchReady,
+    indexBuilding,
     buildIndex,
     doSearch,
     openSearch,
