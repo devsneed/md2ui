@@ -4,15 +4,10 @@
     :class="{ 'sidebar-drawer': isMobile, 'drawer-open': drawerOpen }"
     :style="!isMobile ? { width: width + 'px' } : undefined"
   >
-    <div class="logo">
-      <div class="logo-group">
-        <Logo @go-home="$emit('go-home')" />
-        <a href="https://github.com/devsneed/md2ui" target="_blank" class="github-link" title="GitHub">
-          <Github :size="14" />
-        </a>
-      </div>
-      <div class="logo-actions">
-        <ThemeToggle :mode="mode" :size="14" @toggle-theme="$emit('toggle-theme')" />
+    <!-- 移动端显示 Logo + 关闭按钮，桌面端只显示收起按钮 -->
+    <div class="sidebar-header">
+      <Logo v-if="isMobile" @go-home="$emit('go-home')" />
+      <div class="sidebar-header-actions">
         <button v-if="isMobile" class="sidebar-toggle" @click="$emit('close-drawer')" title="关闭菜单">
           <X :size="16" />
         </button>
@@ -25,9 +20,6 @@
       <div class="nav-section">
         <span>文档目录</span>
         <div class="nav-actions">
-          <button class="action-btn" @click="$emit('open-search')" title="搜索 (Ctrl+K)">
-            <Search :size="14" />
-          </button>
           <button class="action-btn" @click="$emit('expand-all')" title="全部展开">
             <ChevronsDownUp :size="14" />
           </button>
@@ -66,23 +58,21 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Github, PanelLeftClose, X, Search, ChevronsDownUp, ChevronsUpDown, Filter } from 'lucide-vue-next'
+import { PanelLeftClose, X, ChevronsDownUp, ChevronsUpDown, Filter } from 'lucide-vue-next'
 import Logo from './Logo.vue'
 import TreeNode from './TreeNode.vue'
-import ThemeToggle from './ThemeToggle.vue'
 
 const props = defineProps({
   docsList: { type: Array, default: () => [] },
   currentDoc: { type: String, default: '' },
   isMobile: { type: Boolean, default: false },
   drawerOpen: { type: Boolean, default: false },
-  width: { type: Number, default: 320 },
-  mode: { type: String, default: 'system' }
+  width: { type: Number, default: 320 }
 })
 
 defineEmits([
-  'go-home', 'toggle-theme', 'close-drawer', 'collapse',
-  'open-search', 'expand-all', 'collapse-all',
+  'go-home', 'close-drawer', 'collapse',
+  'expand-all', 'collapse-all',
   'toggle-folder', 'select-doc'
 ])
 

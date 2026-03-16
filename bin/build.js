@@ -383,7 +383,6 @@ function generatePageHtml(options) {
   <meta name="description" content="${title}">
   <meta name="theme-color" content="${themeColor}">
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
-  <link rel="manifest" href="/manifest.json">
   <style>${cssContent}</style>
 </head>
 <body>
@@ -471,8 +470,6 @@ mermaid.render(id+'-svg',code).then(function(r){el.innerHTML=r.svg;el.classList.
 .catch(function(e){el.innerHTML='<pre class=\"mermaid-error\">图表渲染失败\\n'+e.message+'</pre>'})})};
 document.head.appendChild(s)})();
 
-// PWA Service Worker 注册
-if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){})}
 `
 }
 
@@ -530,67 +527,7 @@ function getSsgCss(pkgRoot) {
   return css
 }
 
-// 生成 Web App Manifest
-function generateManifest(siteConfig) {
-  return JSON.stringify({
-    name: siteConfig.title,
-    short_name: siteConfig.title,
-    description: '将本地 Markdown 文档转换为美观的 HTML 页面',
-    start_url: '/',
-    display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: siteConfig.themeColor,
-    icons: [
-      { src: '/logo.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }
-    ]
-  }, null, 2)
-}
 
-// 生成 Service Worker
-function generateServiceWorker(fileList) {
-  const cacheFiles = JSON.stringify(fileList)
-  return `// md2ui Service Worker - 离线缓存
-const CACHE_NAME = 'md2ui-v${Date.now()}'
-const PRECACHE_URLS = ${cacheFiles}
-
-// 安装：预缓存所有静态资源
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_URLS)).then(() => self.skipWaiting())
-  )
-})
-
-// 激活：清理旧缓存
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-    )).then(() => self.clients.claim())
-  )
-})
-
-// 请求拦截：Cache First，回退网络
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached
-      return fetch(event.request).then(response => {
-        if (!response || response.status !== 200) return response
-        const clone = response.clone()
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone))
-        return response
-      }).catch(() => {
-        // 离线回退：HTML 请求返回首页
-        if (event.request.headers.get('accept')?.includes('text/html')) {
-          return caches.match('/index.html')
-        }
-      })
-    })
-  )
-})
-`
-}
 
 // ===== 主构建流程 =====
 async function build() {
@@ -672,20 +609,7 @@ async function build() {
   const searchData = buildSearchIndex(flatDocs)
   fs.writeFileSync(resolve(outDir, 'search-index.json'), JSON.stringify(searchData), 'utf-8')
 
-  // 生成 manifest.json（PWA）
-  fs.writeFileSync(resolve(outDir, 'manifest.json'), generateManifest(siteConfig), 'utf-8')
 
-  // 收集所有需要缓存的文件
-  const cacheFiles = [
-    '/index.html',
-    '/logo.svg',
-    '/manifest.json',
-    '/search-index.json',
-    ...flatDocs.map(doc => `/${docHash(doc.key)}.html`)
-  ]
-
-  // 生成 Service Worker（PWA 离线缓存）
-  fs.writeFileSync(resolve(outDir, 'sw.js'), generateServiceWorker(cacheFiles), 'utf-8')
 
   // 生成 404.html（GitHub Pages SPA fallback）
   fs.copyFileSync(resolve(outDir, 'index.html'), resolve(outDir, '404.html'))
@@ -697,7 +621,7 @@ async function build() {
   console.log(`  输出目录: ${outDir}`)
   console.log(`  页面数量: ${count + 1} (含首页)`)
   console.log(`  搜索索引: search-index.json`)
-  console.log(`  PWA 支持: manifest.json + sw.js`)
+
   console.log(`\n  可直接部署到 GitHub Pages / Vercel / Netlify / CDN\n`)
 }
 
