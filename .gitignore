@@ -19,5 +19,4 @@ pnpm-lock.yaml
 # 发布脚本（包含敏感信息）
 publish.sh
 
-#本地MCP Server数据目录
-screenshots
+# 本地 MCP Server 数据目录

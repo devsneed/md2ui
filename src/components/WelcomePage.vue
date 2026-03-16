@@ -13,7 +13,7 @@
         </div>
         <h1 class="welcome-title">md2ui</h1>
       </div>
-      <p class="welcome-desc">将 Markdown 文档转化为优雅的阅读界面</p>
+      <p class="welcome-desc">将 Markdown 文档转换为美观易读的网页</p>
       <!-- 操作区 -->
       <div class="welcome-actions">
         <button class="welcome-btn primary" @click="$emit('start')">

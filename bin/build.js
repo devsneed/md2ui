@@ -424,7 +424,7 @@ function generateWelcomeHtml(siteTitle) {
         <line x1="10" y1="22" x2="17" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
       <h1 class="welcome-title">${siteTitle}</h1>
-      <p class="welcome-desc">将 Markdown 文档转化为优雅的阅读界面</p>
+      <p class="welcome-desc">将 Markdown 文档转换为美观易读的网页</p>
     </div>
   </div>`
 }
