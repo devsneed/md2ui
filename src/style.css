@@ -133,28 +133,30 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  color: var(--color-text-secondary);
+  color: var(--color-text-tertiary);
   cursor: pointer;
   border-radius: 6px;
-  transition: all 0.1s;
+  transition: all 0.15s;
 }
 
 .sidebar-toggle:hover {
-  background: var(--color-bg-secondary);
-  color: var(--color-text);
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 /* ===== 侧边栏头部 ===== */
 .sidebar-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 8px 12px;
   border-bottom: 1px solid var(--color-border);
+  min-height: 41px;
 }
 
 .sidebar-header-actions {
@@ -619,19 +621,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  color: var(--color-text-secondary);
+  color: var(--color-text-tertiary);
   cursor: pointer;
   border-radius: 6px;
-  transition: all 0.1s;
+  transition: all 0.15s;
 }
 
 .toc-toggle:hover {
-  background: var(--color-bg-secondary);
-  color: var(--color-text);
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 .toc-nav {
@@ -688,38 +691,40 @@ body {
 }
 
 /* ===== 收起/展开按钮 ===== */
-.collapse-btn,
 .expand-btn {
-  position: fixed;
-  top: 16px;
   z-index: 100;
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  transition: all 0.1s;
-  box-shadow: 0 1px 3px var(--color-shadow);
-}
-
-.collapse-btn:hover,
-.expand-btn:hover {
   background: var(--color-bg-secondary);
-  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  transition: all 0.15s;
+  padding: 0;
+  flex-shrink: 0;
 }
 
-.collapse-btn-left,
+.expand-btn:hover {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
 .expand-btn-left {
-  left: 16px;
+  border-radius: 0 6px 6px 0;
+  border-left: none;
+  margin-top: 8px;
+  align-self: flex-start;
 }
 
 .expand-btn-right {
-  right: 16px;
+  border-radius: 6px 0 0 6px;
+  border-right: none;
+  margin-top: 8px;
+  align-self: flex-start;
 }
 
 /* ===== 主题切换按钮 ===== */

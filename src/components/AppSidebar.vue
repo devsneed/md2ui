@@ -12,7 +12,7 @@
           <X :size="16" />
         </button>
         <button v-else class="sidebar-toggle" @click="$emit('collapse')" title="收起导航">
-          <PanelLeftClose :size="16" />
+          <ChevronLeft :size="14" />
         </button>
       </div>
     </div>
@@ -58,7 +58,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { PanelLeftClose, X, ChevronsDownUp, ChevronsUpDown, Filter } from 'lucide-vue-next'
+import { ChevronLeft, X, ChevronsDownUp, ChevronsUpDown, Filter } from 'lucide-vue-next'
 import Logo from './Logo.vue'
 import TreeNode from './TreeNode.vue'
 

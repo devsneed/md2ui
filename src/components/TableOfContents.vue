@@ -6,7 +6,7 @@
         <span>目录</span>
       </div>
       <button class="toc-toggle" @click="$emit('toggle')" title="收起目录">
-        <PanelRightClose :size="16" />
+        <ChevronRight :size="14" />
       </button>
     </div>
     <nav class="toc-nav">
@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { List, PanelRightClose } from 'lucide-vue-next'
+import { List, ChevronRight } from 'lucide-vue-next'
 
 defineProps({
   tocItems: {

@@ -42,7 +42,7 @@
     <!-- 左侧拖拽条 & 展开按钮（桌面端） -->
     <div v-if="!isMobile && !sidebarCollapsed" class="resizer resizer-left" @mousedown="startResize('left', $event)"></div>
     <button v-if="!isMobile && sidebarCollapsed" class="expand-btn expand-btn-left" @click="sidebarCollapsed = false" title="展开导航">
-      <PanelLeftOpen :size="16" />
+      <ChevronRight :size="14" />
     </button>
     <!-- 内容区 -->
     <DocContent
@@ -59,7 +59,7 @@
     <div v-if="!isMobile && !tocCollapsed && tocItems.length > 0" class="resizer resizer-right" @mousedown="startResize('right', $event)"></div>
     <TableOfContents v-if="!isMobile" :tocItems="tocItems" :activeHeading="activeHeading" :collapsed="tocCollapsed" :width="tocWidth" @toggle="tocCollapsed = !tocCollapsed" @scroll-to="scrollToHeading" />
     <button v-if="!isMobile && tocCollapsed && tocItems.length > 0" class="expand-btn expand-btn-right" @click="tocCollapsed = false" title="展开目录">
-      <PanelRightOpen :size="16" />
+      <ChevronLeft :size="14" />
     </button>
     </div>
     <!-- 移动端 TOC -->
@@ -96,7 +96,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ArrowUp, PanelLeftOpen, PanelRightOpen } from 'lucide-vue-next'
+import { ArrowUp, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import MobileHeader from './components/MobileHeader.vue'
 import TopBar from './components/TopBar.vue'
 import AppSidebar from './components/AppSidebar.vue'
