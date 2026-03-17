@@ -392,10 +392,6 @@ function generatePageHtml(options) {
         <div class="logo-group">
           <a href="/index.html" class="logo-link">${siteTitle}</a>
         </div>
-        <div class="logo-actions">
-          <button class="theme-toggle" onclick="toggleTheme()" title="切换主题">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          </button>
         </div>
       </div>
       <nav class="nav-menu">
@@ -431,13 +427,6 @@ function generateWelcomeHtml(siteTitle) {
 // 内联 JS：主题切换 + 侧边栏折叠 + 代码复制 + Mermaid 延迟渲染
 function getInlineScript() {
   return `
-// 主题切换
-function toggleTheme(){var t=document.documentElement,c=t.getAttribute('data-theme');
-if(c==='dark'){t.removeAttribute('data-theme');localStorage.setItem('theme','light')}
-else{t.setAttribute('data-theme','dark');localStorage.setItem('theme','dark')}}
-(function(){var t=localStorage.getItem('theme');
-if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.setAttribute('data-theme','dark')})();
-
 // 侧边栏折叠
 document.querySelectorAll('.nav-folder-group').forEach(function(g){
   g.querySelector('.nav-folder').addEventListener('click',function(){g.classList.toggle('open')})});
@@ -511,18 +500,6 @@ function getSsgCss(pkgRoot) {
   }
   .ssg-page .sidebar.drawer-open { transform: translateX(0); }
 }
-/* highlight.js github-dark 内联 */
-.hljs{color:#e6edf3;background:#24292f}
-.hljs-keyword,.hljs-built_in{color:#ff7b72}
-.hljs-string,.hljs-attr{color:#a5d6ff}
-.hljs-comment{color:#8b949e}
-.hljs-number,.hljs-literal{color:#79c0ff}
-.hljs-title,.hljs-function{color:#d2a8ff}
-.hljs-type,.hljs-class{color:#ffa657}
-.hljs-variable{color:#ffa657}
-.hljs-meta{color:#79c0ff}
-.hljs-addition{color:#aff5b4;background:rgba(46,160,67,0.15)}
-.hljs-deletion{color:#ffdcd7;background:rgba(248,81,73,0.15)}
 `
   return css
 }

@@ -3,18 +3,14 @@
     <!-- 移动端顶栏 -->
     <MobileHeader
       v-if="isMobile"
-      :mode="mode"
       @open-drawer="mobileDrawerOpen = true"
       @go-home="goHome"
       @open-search="openSearch"
-      @toggle-theme="toggleTheme"
     />
     <!-- 桌面端顶栏 -->
     <TopBar
       v-if="!isMobile"
-      :mode="mode"
-      @open-search="openSearch"
-      @toggle-theme="toggleTheme"
+      @select-search="handleSearchSelect"
       @go-home="goHome"
     />
     <!-- 移动端遮罩 -->
@@ -82,15 +78,7 @@
     </transition>
     <!-- 图片放大 -->
     <ImageZoom :visible="zoomVisible" :imageContent="zoomContent" @close="zoomVisible = false" />
-    <!-- 搜索面板 -->
-    <SearchPanel
-      :visible="searchVisible"
-      :query="searchQuery"
-      :results="searchResults"
-      @close="closeSearch"
-      @search="doSearch"
-      @select="handleSearchSelect"
-    />
+
   </div>
 </template>
 
@@ -104,10 +92,9 @@ import DocContent from './components/DocContent.vue'
 import TableOfContents from './components/TableOfContents.vue'
 import MobileToc from './components/MobileToc.vue'
 import ImageZoom from './components/ImageZoom.vue'
-import SearchPanel from './components/SearchPanel.vue'
 import { useDocManager } from './composables/useDocManager.js'
 import { useResize } from './composables/useResize.js'
-import { useTheme } from './composables/useTheme.js'
+
 import { useSearch } from './composables/useSearch.js'
 import { useMobile } from './composables/useMobile.js'
 
@@ -130,8 +117,8 @@ const {
 } = useDocManager()
 
 const { sidebarWidth, tocWidth, startResize } = useResize()
-const { mode, toggleTheme } = useTheme()
-const { searchVisible, searchQuery, searchResults, doSearch, openSearch, closeSearch } = useSearch()
+
+const { openSearch } = useSearch()
 const { isMobile, mobileDrawerOpen, mobileTocOpen } = useMobile()
 
 
@@ -147,9 +134,6 @@ function onContentClick(event) {
 
 // 全局快捷键
 window.addEventListener('popstate', () => loadFromUrl())
-window.addEventListener('keydown', (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch() }
-})
 
 onMounted(async () => {
   await loadDocsList()

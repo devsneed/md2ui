@@ -3,7 +3,6 @@ import { marked } from 'marked'
 import mermaid from 'mermaid'
 import GithubSlugger from 'github-slugger'
 import hljs from 'highlight.js'
-import 'highlight.js/styles/github-dark.css'
 import { parseFrontmatter, calcReadingTime } from './useFrontmatter.js'
 import { docHash, resolveDocKey, findDocInTree } from './useDocHash.js'
 

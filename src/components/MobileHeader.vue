@@ -8,7 +8,6 @@
       <button class="mobile-action-btn" @click="$emit('open-search')" title="搜索">
         <Search :size="18" />
       </button>
-      <ThemeToggle :mode="mode" :size="18" @toggle-theme="$emit('toggle-theme')" />
     </div>
   </header>
 </template>
@@ -16,11 +15,6 @@
 <script setup>
 import { Menu, Search } from 'lucide-vue-next'
 import Logo from './Logo.vue'
-import ThemeToggle from './ThemeToggle.vue'
 
-defineProps({
-  mode: { type: String, default: 'system' }
-})
-
-defineEmits(['open-drawer', 'go-home', 'open-search', 'toggle-theme'])
+defineEmits(['open-drawer', 'go-home', 'open-search'])
 </script>
