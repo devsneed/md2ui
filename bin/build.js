@@ -453,7 +453,7 @@ function closeDrawer(){if(sidebar){sidebar.classList.remove('drawer-open');if(ov
 (function(){var els=document.querySelectorAll('.mermaid');
 if(els.length===0)return;
 var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
-s.onload=function(){mermaid.initialize({startOnLoad:false,theme:'neutral'});
+s.onload=function(){mermaid.initialize({startOnLoad:false,theme:'base',themeVariables:{primaryColor:'#e8eaf6',primaryTextColor:'#37474f',primaryBorderColor:'#7986cb',lineColor:'#90a4ae',textColor:'#455a64',secondaryColor:'#f3e5f5',secondaryBorderColor:'#ba68c8',tertiaryColor:'#e0f7fa',tertiaryBorderColor:'#4dd0e1',fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',fontSize:'14px',actorBkg:'#e8eaf6',actorBorder:'#7986cb',signalColor:'#5c6bc0',sectionBkgColor:'#e8eaf6',altSectionBkgColor:'#f3e5f5',taskBkgColor:'#7986cb',taskTextColor:'#ffffff',activeTaskBkgColor:'#5c6bc0',doneTaskBkgColor:'#9fa8da',pie1:'#7986cb',pie2:'#ba68c8',pie3:'#4dd0e1',pie4:'#ffb74d',pie5:'#a1887f',mainBkg:'#e8eaf6',background:'#ffffff'}});
 els.forEach(function(el){var id=el.id;var code=el.textContent;
 mermaid.render(id+'-svg',code).then(function(r){el.innerHTML=r.svg;el.classList.add('zoomable-image');el.style.cursor='zoom-in'})
 .catch(function(e){el.innerHTML='<pre class=\"mermaid-error\">图表渲染失败\\n'+e.message+'</pre>'})})};

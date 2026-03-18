@@ -6,11 +6,61 @@ import hljs from 'highlight.js'
 import { parseFrontmatter, calcReadingTime } from './useFrontmatter.js'
 import { docHash, resolveDocKey, findDocInTree } from './useDocHash.js'
 
-// 初始化 Mermaid
+// 初始化 Mermaid — 基于 base 主题自定义柔和蓝紫色调
 mermaid.initialize({
   startOnLoad: false,
-  theme: 'neutral',
-  securityLevel: 'loose'
+  theme: 'base',
+  // Mermaid 内置主题有这几个：default、neutral、dark、forest、base。
+  securityLevel: 'loose',
+  themeVariables: {
+    // 基础色调
+    primaryColor: '#e8eaf6',
+    primaryTextColor: '#37474f',
+    primaryBorderColor: '#7986cb',
+    // 线条与标签
+    lineColor: '#90a4ae',
+    textColor: '#455a64',
+    // 次要 / 第三色
+    secondaryColor: '#f3e5f5',
+    secondaryBorderColor: '#ba68c8',
+    secondaryTextColor: '#4a148c',
+    tertiaryColor: '#e0f7fa',
+    tertiaryBorderColor: '#4dd0e1',
+    tertiaryTextColor: '#006064',
+    // 字体
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontSize: '14px',
+    // 节点样式
+    nodeBorder: '#7986cb',
+    nodeTextColor: '#37474f',
+    // 序列图
+    actorBkg: '#e8eaf6',
+    actorBorder: '#7986cb',
+    actorTextColor: '#37474f',
+    signalColor: '#5c6bc0',
+    signalTextColor: '#37474f',
+    // 甘特图
+    sectionBkgColor: '#e8eaf6',
+    altSectionBkgColor: '#f3e5f5',
+    taskBkgColor: '#7986cb',
+    taskTextColor: '#ffffff',
+    activeTaskBkgColor: '#5c6bc0',
+    doneTaskBkgColor: '#9fa8da',
+    // 饼图
+    pie1: '#7986cb',
+    pie2: '#ba68c8',
+    pie3: '#4dd0e1',
+    pie4: '#ffb74d',
+    pie5: '#a1887f',
+    // 类图
+    classText: '#37474f',
+    // 状态图
+    labelColor: '#37474f',
+    // 背景
+    mainBkg: '#e8eaf6',
+    nodeBkg: '#e8eaf6',
+    background: '#ffffff',
+  }
 })
 
 // 创建自定义渲染器，处理链接、标题锚点和 Mermaid

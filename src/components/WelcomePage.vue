@@ -63,40 +63,38 @@ const features = [
   align-items: center;
   justify-content: center;
   min-height: 100%;
-  padding: 64px 32px;
+  padding: 48px 24px;
   user-select: none;
 }
 
-/* ===== Hero 区域 ===== */
 .welcome-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 56px;
+  gap: 12px;
+  margin-bottom: 40px;
 }
 
-/* 图标 + 标题 */
 .welcome-brand {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .welcome-logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   background: var(--color-accent-bg);
   color: var(--color-accent);
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
 .welcome-title {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 600;
   color: var(--color-text);
   letter-spacing: -0.03em;
   border: none;
@@ -105,26 +103,25 @@ const features = [
 }
 
 .welcome-desc {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--color-text-secondary);
   margin: 0;
 }
 
-/* 操作按钮 */
 .welcome-actions {
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .welcome-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 32px;
-  border-radius: 10px;
-  font-size: 15px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
   text-decoration: none;
   border: none;
   font-family: inherit;
@@ -133,18 +130,15 @@ const features = [
 .welcome-btn.primary {
   background: var(--color-accent);
   color: #fff;
-  box-shadow: 0 2px 12px rgba(62, 175, 124, 0.25);
 }
 
 .welcome-btn.primary:hover {
   background: var(--color-accent-hover);
-  box-shadow: 0 4px 16px rgba(62, 175, 124, 0.35);
-  transform: translateY(-1px);
 }
 
 .btn-arrow {
   opacity: 0.7;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
 
 .welcome-btn.primary:hover .btn-arrow {
@@ -152,124 +146,106 @@ const features = [
   transform: translateX(2px);
 }
 
-/* GitHub 链接 */
 .welcome-github {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-size: 14px;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--color-text);
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all 0.15s;
   border: 1px solid var(--color-border);
   background: var(--color-bg-secondary);
 }
 
 .welcome-github:hover {
-  border-color: var(--color-text-secondary);
   background: var(--color-bg-tertiary);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px var(--color-shadow);
 }
 
 .welcome-github-sep {
   width: 1px;
-  height: 14px;
+  height: 12px;
   background: var(--color-border);
 }
 
 .welcome-github-repo {
   color: var(--color-text-secondary);
   font-weight: 400;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .welcome-github-arrow {
   color: var(--color-text-tertiary);
-  transition: all 0.15s;
 }
 
-.welcome-github:hover .welcome-github-arrow {
-  color: var(--color-text-secondary);
-  transform: translateX(1px);
-}
-
-/* ===== 特性卡片 ===== */
 .welcome-features {
   display: flex;
-  gap: 20px;
-  max-width: 680px;
+  gap: 16px;
+  max-width: 640px;
   width: 100%;
 }
 
 .feature-card {
   flex: 1;
   text-align: center;
-  padding: 24px 16px 20px;
-  border-radius: 12px;
+  padding: 20px 14px 16px;
+  border-radius: 6px;
   background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-light);
-  transition: all 0.2s;
+  border: 1px solid var(--color-border);
+  transition: all 0.15s;
 }
 
 .feature-card:hover {
-  border-color: var(--color-border);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--color-shadow);
+  border-color: var(--color-text-tertiary);
 }
 
 .feature-icon-wrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background: var(--color-accent-bg);
   color: var(--color-accent);
-  border-radius: 10px;
-  margin-bottom: 14px;
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
 .feature-card h3 {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--color-text);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .feature-card p {
   font-size: 12px;
   color: var(--color-text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
   margin: 0;
 }
 
-/* ===== 响应式 ===== */
 @media (max-width: 640px) {
   .welcome-page {
-    padding: 48px 20px;
+    padding: 32px 16px;
   }
   .welcome-features {
     flex-direction: column;
-    gap: 12px;
-  }
-  .feature-card {
-    padding: 20px 16px 16px;
+    gap: 8px;
   }
   .welcome-title {
-    font-size: 28px;
+    font-size: 24px;
   }
   .welcome-logo {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 36px;
+    height: 36px;
   }
   .welcome-logo svg {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
   }
 }
 </style>

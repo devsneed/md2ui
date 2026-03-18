@@ -18,18 +18,14 @@ defineEmits(['go-home'])
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: var(--color-text);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: color 0.15s;
 }
 
 .logo-container:hover {
   color: var(--color-accent);
-}
-
-.logo-container:active {
-  transform: scale(0.96);
 }
 
 .logo-icon {
@@ -37,7 +33,7 @@ defineEmits(['go-home'])
 }
 
 .logo-text {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
