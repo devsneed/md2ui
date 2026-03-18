@@ -21,7 +21,9 @@ export function useDocManager() {
   // 文档状态
   const docsList = ref([])
   const currentDoc = ref('')
-  const showWelcome = ref(true)
+  // 如果 URL 有路径，说明是刷新已有文档页面，初始不显示欢迎页，避免闪烁
+  const hasInitialPath = window.location.pathname.replace(/^\//, '') !== ''
+  const showWelcome = ref(!hasInitialPath)
 
   // composables
   const { htmlContent, tocItems, renderMarkdown, docHash } = useMarkdown()
