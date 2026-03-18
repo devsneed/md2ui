@@ -31,22 +31,40 @@ function createRenderer(currentDocKey, docsList) {
       const id = 'mermaid-' + Math.random().toString(36).substr(2, 9)
       return `<div class="mermaid" id="${id}">${code}</div>`
     }
+    // 高亮代码
     let highlighted
     if (language && hljs.getLanguage(language)) {
       highlighted = hljs.highlight(code, { language }).value
     } else {
       highlighted = hljs.highlightAuto(code).value
     }
-    const langLabel = language || ''
-    return `<div class="code-block-wrapper">
+
+    // 生成行号（按换行拆分）
+    const lines = code.split('\n')
+    const lineCount = lines.length
+    const lineNums = lines.map((_, i) => `<span class="line-num">${i + 1}</span>`).join('')
+
+    const langLabel = (language || '').toUpperCase()
+    // 切换行号按钮（列表图标）
+    const toggleLineNumIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`
+    // 切换高亮按钮（</> 文本图标）
+    const toggleHighlightIcon = `<span class="code-icon-text">&lt;/&gt;</span>`
+    // 复制按钮图标
+    const copyIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`
+
+    return `<div class="code-block-wrapper" data-raw-code="${encodeURIComponent(code)}" data-lang="${language || ''}">
       <div class="code-block-header">
         <span class="code-lang-label">${langLabel}</span>
-        <button class="copy-code-btn" title="复制代码">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          <span class="copy-text">复制</span>
-        </button>
+        <div class="code-block-actions">
+          <button class="code-action-btn toggle-line-num-btn active" data-tooltip="隐藏行号">${toggleLineNumIcon}</button>
+          <button class="code-action-btn toggle-highlight-btn active" data-tooltip="关闭高亮">${toggleHighlightIcon}</button>
+          <button class="code-action-btn copy-code-btn" data-tooltip="复制代码">${copyIcon}<span class="copy-text">复制</span></button>
+        </div>
       </div>
-      <pre><code class="hljs${language ? ` language-${language}` : ''}">${highlighted}</code></pre>
+      <div class="code-block-body">
+        <div class="line-numbers" aria-hidden="true">${lineNums}</div>
+        <pre><code class="hljs${language ? ` language-${language}` : ''}">${highlighted}</code></pre>
+      </div>
     </div>`
   }
 
@@ -134,11 +152,11 @@ function addImageZoomHandlers() {
   })
 }
 
-// 为代码块添加复制按钮事件
-function addCopyCodeHandlers() {
+// 为代码块添加交互事件（复制、切换行号、切换高亮）
+function addCodeBlockHandlers() {
   nextTick(() => {
-    const buttons = document.querySelectorAll('.copy-code-btn')
-    buttons.forEach(btn => {
+    // 复制按钮
+    document.querySelectorAll('.copy-code-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const wrapper = btn.closest('.code-block-wrapper')
         const code = wrapper.querySelector('code')
@@ -157,6 +175,50 @@ function addCopyCodeHandlers() {
           range.selectNodeContents(code)
           window.getSelection().removeAllRanges()
           window.getSelection().addRange(range)
+        }
+      })
+    })
+
+    // 切换行号
+    document.querySelectorAll('.toggle-line-num-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const wrapper = btn.closest('.code-block-wrapper')
+        const lineNumbers = wrapper.querySelector('.line-numbers')
+        if (!lineNumbers) return
+        btn.classList.toggle('active')
+        lineNumbers.classList.toggle('hidden')
+        btn.dataset.tooltip = btn.classList.contains('active') ? '隐藏行号' : '显示行号'
+      })
+    })
+
+    // 切换语法高亮
+    document.querySelectorAll('.toggle-highlight-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const wrapper = btn.closest('.code-block-wrapper')
+        const codeEl = wrapper.querySelector('code')
+        if (!codeEl) return
+        const rawCode = decodeURIComponent(wrapper.dataset.rawCode || '')
+        const lang = wrapper.dataset.lang || ''
+        const isHighlighted = btn.classList.contains('active')
+
+        if (isHighlighted) {
+          // 关闭高亮：显示纯文本
+          codeEl.textContent = rawCode
+          codeEl.className = 'code-plain'
+          btn.classList.remove('active')
+          btn.dataset.tooltip = '开启高亮'
+        } else {
+          // 开启高亮：重新渲染
+          let highlighted
+          if (lang && hljs.getLanguage(lang)) {
+            highlighted = hljs.highlight(rawCode, { language: lang }).value
+          } else {
+            highlighted = hljs.highlightAuto(rawCode).value
+          }
+          codeEl.innerHTML = highlighted
+          codeEl.className = `hljs${lang ? ` language-${lang}` : ''}`
+          btn.classList.add('active')
+          btn.dataset.tooltip = '关闭高亮'
         }
       })
     })
@@ -221,7 +283,7 @@ export function useMarkdown() {
     await renderMermaid()
     wrapTables()
     addImageZoomHandlers()
-    addCopyCodeHandlers()
+    addCodeBlockHandlers()
     extractTOC(tocItems)
   }
 

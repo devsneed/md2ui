@@ -1,17 +1,17 @@
 /* ===== highlight.js 主题：亮色/暗色自动切换 ===== */
 
-/* 基础布局（两个主题共用） */
+/* 基础布局 */
 pre code.hljs {
   display: block;
   overflow-x: auto;
-  padding: 1em;
+  padding: 16px;
 }
 
 code.hljs {
   padding: 3px 5px;
 }
 
-/* --- 亮色主题（默认） --- */
+/* 亮色主题（GitHub Light 风格） */
 .hljs {
   color: #24292e;
   background: transparent;
