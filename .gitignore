@@ -16,6 +16,9 @@ pnpm-lock.yaml
 # log
 *.log
 
+# 截图目录
+screenshots
+
 # 发布脚本（包含敏感信息）
 publish.sh
 
