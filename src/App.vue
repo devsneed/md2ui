@@ -111,7 +111,7 @@ const {
   scrollProgress, showBackToTop, activeHeading,
   handleScroll, scrollToHeading, scrollToTop,
   loadDocsList, loadFromUrl, goHome, loadDoc, loadFirstDoc,
-  handleDocSelect, handleContentClick, handleSearchSelect, handleHotUpdate,
+  handleDocSelect, handleContentClick, handleSearchSelect,
   toggleFolder, onExpandAll, onCollapseAll,
   prevDoc, nextDoc
 } = useDocManager()
@@ -138,10 +138,5 @@ window.addEventListener('popstate', () => loadFromUrl())
 onMounted(async () => {
   await loadDocsList()
   await loadFromUrl()
-
-  // 文档热更新
-  if (import.meta.hot) {
-    import.meta.hot.on('md2ui:doc-change', handleHotUpdate)
-  }
 })
 </script>

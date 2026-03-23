@@ -184,15 +184,6 @@ export function useDocManager() {
     }
   }
 
-  // 热更新处理
-  async function handleHotUpdate() {
-    docsList.value = await getDocsList()
-    buildIndex(docsList.value)
-    if (currentDoc.value) {
-      await loadDoc(currentDoc.value)
-    }
-  }
-
   return {
     // 状态
     docsList,
@@ -216,7 +207,6 @@ export function useDocManager() {
     handleDocSelect,
     handleContentClick,
     handleSearchSelect,
-    handleHotUpdate,
     // 文件夹操作
     toggleFolder,
     onExpandAll,

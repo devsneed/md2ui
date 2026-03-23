@@ -64,7 +64,8 @@ export async function getDocsList() {
 
   // 开发模式：扫描 public/docs 目录
   try {
-    const modules = import.meta.glob('/public/docs/**/*.md')
+    // 排除隐藏目录和隐藏文件（以 . 开头的路径段）
+    const modules = import.meta.glob('/public/docs/**/*.md', { eager: false })
     const files = []
     
     for (const path in modules) {

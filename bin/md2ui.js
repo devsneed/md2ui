@@ -78,7 +78,7 @@ function scanDocs(dir, basePath = '', level = 0, folderExpanded = false) {
   if (!fs.existsSync(dir)) return items
 
   const entries = fs.readdirSync(dir, { withFileTypes: true })
-    .filter(e => e.name !== 'node_modules' && !e.name.startsWith('.'))
+    .filter(e => e.name !== 'node_modules')
     .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
 
   for (const entry of entries) {
@@ -121,7 +121,7 @@ function scanDocs(dir, basePath = '', level = 0, folderExpanded = false) {
 function hasMdFiles(dir) {
   if (!fs.existsSync(dir)) return false
   const entries = fs.readdirSync(dir, { withFileTypes: true })
-    .filter(e => e.name !== 'node_modules' && !e.name.startsWith('.'))
+    .filter(e => e.name !== 'node_modules')
   for (const entry of entries) {
     if (entry.isFile() && entry.name.endsWith('.md')) return true
     if (entry.isDirectory() && hasMdFiles(resolve(dir, entry.name))) return true
@@ -134,19 +134,6 @@ function md2uiPlugin(siteConfig) {
   return {
     name: 'md2ui-server',
     configureServer(server) {
-      // 监听 .md 文件变化，推送热更新
-      const watcher = fs.watch(userDir, { recursive: true }, (eventType, filename) => {
-        if (!filename || !filename.endsWith('.md')) return
-        // 通知前端刷新
-        server.ws.send({
-          type: 'custom',
-          event: 'md2ui:doc-change',
-          data: { file: filename, type: eventType }
-        })
-      })
-
-      server.httpServer?.on('close', () => watcher.close())
-
       // API 中间件
       server.middlewares.use((req, res, next) => {
         // 文档列表 API
