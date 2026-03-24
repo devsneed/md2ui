@@ -53,7 +53,7 @@
     />
     <!-- 桌面端 TOC -->
     <div v-if="!isMobile && !tocCollapsed && tocItems.length > 0" class="resizer resizer-right" @mousedown="startResize('right', $event)"></div>
-    <TableOfContents v-if="!isMobile" :tocItems="tocItems" :activeHeading="activeHeading" :collapsed="tocCollapsed" :width="tocWidth" @toggle="tocCollapsed = !tocCollapsed" @scroll-to="scrollToHeading" />
+    <TableOfContents v-if="!isMobile" :tocItems="tocItems" :activeHeading="activeHeading" :collapsed="tocCollapsed" :width="tocWidth" @toggle="tocCollapsed = !tocCollapsed" @scroll-to="(id) => scrollToHeading(id, { push: true })" />
     <button v-if="!isMobile && tocCollapsed && tocItems.length > 0" class="expand-btn expand-btn-right" @click="tocCollapsed = false" title="展开目录">
       <ChevronLeft :size="14" />
     </button>
@@ -67,7 +67,7 @@
       :showWelcome="showWelcome"
       @toggle="mobileTocOpen = !mobileTocOpen"
       @close="mobileTocOpen = false"
-      @scroll-to="(id) => { scrollToHeading(id); mobileTocOpen = false }"
+      @scroll-to="(id) => { scrollToHeading(id, { push: true }); mobileTocOpen = false }"
     />
     <!-- 返回顶部 -->
     <transition name="fade">

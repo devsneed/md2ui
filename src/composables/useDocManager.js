@@ -4,7 +4,7 @@ import { useMarkdown } from './useMarkdown.js'
 import { useSearch } from './useSearch.js'
 import { useScroll } from './useScroll.js'
 import { useMobile } from './useMobile.js'
-import { findDoc, findFirstDoc, findDocByHash, expandParents, flattenDocsList, expandAll, collapseAll } from './useDocTree.js'
+import { findDoc, findFirstDoc, findReadmeDoc, findDocByHash, expandParents, flattenDocsList, expandAll, collapseAll } from './useDocTree.js'
 
 // 等待内容区域图片加载完成
 async function waitForContentImages(timeoutMs = 3000) {
@@ -36,23 +36,38 @@ export function useDocManager() {
   } = useScroll()
   const { isMobile, mobileDrawerOpen } = useMobile()
 
-  // 滚动处理，同步锚点到 URL
+  // 获取当前滚动位置
+  function getScrollTop() {
+    const el = document.querySelector('.content')
+    return el ? el.scrollTop : 0
+  }
+
+  // 构造 history state，保留滚动位置
+  function makeState(scrollTop) {
+    return { scrollTop: scrollTop ?? getScrollTop() }
+  }
+
+  // 滚动处理，同步锚点到 URL（replaceState 保留滚动位置）
   function handleScroll(e) {
     _handleScroll(e)
     if (activeHeading.value && currentDoc.value) {
-      history.replaceState(null, '', `/${docHash(currentDoc.value)}#${activeHeading.value}`)
+      history.replaceState(makeState(), '', `/${docHash(currentDoc.value)}#${activeHeading.value}`)
     }
   }
 
   // push: true 表示用户主动点击锚点，产生可回退的历史条目
   function scrollToHeading(id, { push = false } = {}) {
+    if (push && currentDoc.value) {
+      // 先把当前滚动位置写入即将被覆盖的历史条目
+      history.replaceState(makeState(), '', window.location.href)
+    }
     _scrollToHeading(id)
     if (currentDoc.value) {
       const url = `/${docHash(currentDoc.value)}#${id}`
       if (push) {
-        history.pushState(null, '', url)
+        history.pushState(makeState(), '', url)
       } else {
-        history.replaceState(null, '', url)
+        history.replaceState(makeState(), '', url)
       }
     }
   }
@@ -63,26 +78,33 @@ export function useDocManager() {
     buildIndex(docsList.value)
   }
 
-  // 回到欢迎页
-  function goHome() {
+  // 回到欢迎页（isPopstate: true 表示由浏览器回退触发，不操作 history）
+  function goHome({ isPopstate = false } = {}) {
     currentDoc.value = ''
     showWelcome.value = true
     htmlContent.value = ''
     tocItems.value = []
-    history.pushState(null, '', '/')
+    if (!isPopstate) {
+      // 用户主动点击，保存旧条目滚动位置后 push
+      history.replaceState(makeState(), '', window.location.href)
+      history.pushState(makeState(0), '', '/')
+    }
     if (isMobile.value) mobileDrawerOpen.value = false
   }
 
   // 加载文档
-  async function loadDoc(key, { replace = false, anchor = '' } = {}) {
+  async function loadDoc(key, { replace = false, anchor = '', keepState = false } = {}) {
     currentDoc.value = key
     showWelcome.value = false
     const hash = docHash(key)
     const url = anchor ? `/${hash}#${anchor}` : `/${hash}`
     if (replace) {
-      history.replaceState(null, '', url)
+      // keepState: popstate 回退时保留浏览器已有的 state（含 scrollTop）
+      if (!keepState) history.replaceState(makeState(0), '', url)
     } else {
-      history.pushState(null, '', url)
+      // push 前先保存当前滚动位置到旧条目
+      history.replaceState(makeState(), '', window.location.href)
+      history.pushState(makeState(0), '', url)
     }
     const doc = findDoc(docsList.value, key)
     if (!doc) return
@@ -175,22 +197,35 @@ export function useDocManager() {
   async function loadFromUrl() {
     const pathname = window.location.pathname.replace(/^\//, '')
     const anchor = window.location.hash.replace('#', '')
+    const savedScroll = history.state?.scrollTop
     if (!pathname) {
       if (currentDoc.value) {
-        // 从文档页回退到首页
-        goHome()
+        // 浏览器回退到首页，不操作 history
+        goHome({ isPopstate: true })
       } else if (docsList.value.length === 0) {
         showWelcome.value = false
         renderMarkdown('# 当前目录没有 Markdown 文档\n\n请在当前目录下添加 `.md` 文件，然后刷新页面。')
+      } else {
+        // 优先定位到 README，没有则定位到第一篇文档
+        const readme = findReadmeDoc(docsList.value)
+        const target = readme || findFirstDoc(docsList.value)
+        if (target) {
+          expandParents(docsList.value, target.key)
+          await loadDoc(target.key, { replace: true })
+        }
       }
       return
     }
     const doc = findDocByHash(docsList.value, pathname, docHash)
     if (!doc) return
-    // 同一文档内的锚点变化，只需滚动，无需重新加载
+    // 同一文档内的锚点变化（含回退）
     if (doc.key === currentDoc.value) {
-      if (anchor) {
-        await nextTick()
+      await nextTick()
+      if (savedScroll != null) {
+        // 有保存的滚动位置，直接恢复（回退场景）
+        const contentEl = document.querySelector('.content')
+        if (contentEl) contentEl.scrollTo({ top: savedScroll, behavior: 'smooth' })
+      } else if (anchor) {
         _scrollToHeading(decodeURIComponent(anchor))
       } else {
         const contentEl = document.querySelector('.content')
@@ -199,8 +234,14 @@ export function useDocManager() {
       return
     }
     expandParents(docsList.value, doc.key)
-    await loadDoc(doc.key, { replace: true, anchor: anchor ? decodeURIComponent(anchor) : '' })
-    if (anchor) { await nextTick(); await waitForContentImages(); _scrollToHeading(decodeURIComponent(anchor)) }
+    await loadDoc(doc.key, { replace: true, keepState: savedScroll != null, anchor: anchor ? decodeURIComponent(anchor) : '' })
+    if (savedScroll != null) {
+      await nextTick()
+      const contentEl = document.querySelector('.content')
+      if (contentEl) contentEl.scrollTo({ top: savedScroll })
+    } else if (anchor) {
+      await nextTick(); await waitForContentImages(); _scrollToHeading(decodeURIComponent(anchor))
+    }
   }
 
   return {

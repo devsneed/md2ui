@@ -24,6 +24,22 @@ export function findFirstDoc(items) {
   return null
 }
 
+// 查找 README 文档（不区分大小写，优先根目录）
+export function findReadmeDoc(items) {
+  // 先在当前层级找
+  for (const item of items) {
+    if (item.type === 'file' && /^readme$/i.test(item.key?.split('/').pop() || '')) return item
+  }
+  // 再递归子目录找
+  for (const item of items) {
+    if (item.type === 'folder' && item.children) {
+      const found = findReadmeDoc(item.children)
+      if (found) return found
+    }
+  }
+  return null
+}
+
 // 根据 hash 查找文档
 export function findDocByHash(items, hash, docHash) {
   for (const item of items) {

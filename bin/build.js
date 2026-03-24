@@ -232,7 +232,7 @@ async function renderMarkdownToHtml(markdown, currentDocKey, docsList) {
 
     // 纯锚点
     if (decoded.startsWith('#')) {
-      const anchor = slugger.slug(decoded.slice(1), false)
+      const anchor = decoded.slice(1)
       return `<a href="#${anchor}"${titleAttr}>${text}</a>`
     }
 
@@ -243,9 +243,8 @@ async function renderMarkdownToHtml(markdown, currentDocKey, docsList) {
       const doc = findDocInTree(docsList, targetKey)
       if (doc) {
         const hash = docHash(doc.key)
-        const anchorSlug = anchor ? slugger.slug(anchor, false) : ''
-        const url = anchorSlug ? `/${hash}.html#${anchorSlug}` : `/${hash}.html`
-        return `<a href="${url}" data-doc-key="${doc.key}"${anchorSlug ? ` data-anchor="${anchorSlug}"` : ''}${titleAttr}>${text}</a>`
+        const url = anchor ? `/${hash}.html#${anchor}` : `/${hash}.html`
+        return `<a href="${url}" data-doc-key="${doc.key}"${anchor ? ` data-anchor="${anchor}"` : ''}${titleAttr}>${text}</a>`
       }
       return `<a href="javascript:void(0)" class="broken-link" title="文档未找到: ${decoded}">${text}</a>`
     }

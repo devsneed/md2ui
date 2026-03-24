@@ -7,8 +7,8 @@
   --color-text: #1a1e1b;
   --color-text-secondary: #505856;
   --color-text-tertiary: #848e89;
-  --color-border: #d4dbd6;
-  --color-border-light: #e4e9e5;
+  --color-border: rgba(66, 184, 131, 0.25);
+  --color-border-light: rgba(66, 184, 131, 0.15);
   --color-accent: #42b883;
   --color-accent-hover: #359d6e;
   --color-accent-bg: rgba(66, 184, 131, 0.1);
@@ -18,7 +18,7 @@
   --color-code-border: transparent;
   --color-pre-bg: #ffffff;
   --color-pre-header: #f7f9f8;
-  --color-pre-border: #d4dbd6;
+  --color-pre-border: rgba(66, 184, 131, 0.25);
   --color-pre-text: #1a1e1b;
   --color-blockquote-border: #42b883;
   --color-blockquote-bg: rgba(66, 184, 131, 0.03);
@@ -1074,7 +1074,7 @@ body {
   align-items: center;
   padding: 8px 16px;
   background: var(--color-bg);
-  border-bottom: 2px solid var(--color-accent);
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
   gap: 12px;
   z-index: 100;
