@@ -44,10 +44,16 @@ export function useDocManager() {
     }
   }
 
-  function scrollToHeading(id) {
+  // push: true 表示用户主动点击锚点，产生可回退的历史条目
+  function scrollToHeading(id, { push = false } = {}) {
     _scrollToHeading(id)
     if (currentDoc.value) {
-      history.replaceState(null, '', `/${docHash(currentDoc.value)}#${id}`)
+      const url = `/${docHash(currentDoc.value)}#${id}`
+      if (push) {
+        history.pushState(null, '', url)
+      } else {
+        history.replaceState(null, '', url)
+      }
     }
   }
 
@@ -127,7 +133,7 @@ export function useDocManager() {
       }
       if (link.dataset.anchor && !docKey) {
         event.preventDefault()
-        scrollToHeading(link.dataset.anchor)
+        scrollToHeading(link.dataset.anchor, { push: true })
         return
       }
       return
@@ -165,23 +171,36 @@ export function useDocManager() {
     loadDoc(key)
   }
 
-  // URL 路由
+  // URL 路由（popstate / 初始加载）
   async function loadFromUrl() {
     const pathname = window.location.pathname.replace(/^\//, '')
     const anchor = window.location.hash.replace('#', '')
     if (!pathname) {
-      if (docsList.value.length === 0) {
+      if (currentDoc.value) {
+        // 从文档页回退到首页
+        goHome()
+      } else if (docsList.value.length === 0) {
         showWelcome.value = false
         renderMarkdown('# 当前目录没有 Markdown 文档\n\n请在当前目录下添加 `.md` 文件，然后刷新页面。')
       }
       return
     }
     const doc = findDocByHash(docsList.value, pathname, docHash)
-    if (doc) {
-      expandParents(docsList.value, doc.key)
-      await loadDoc(doc.key, { replace: true, anchor: anchor ? decodeURIComponent(anchor) : '' })
-      if (anchor) { await nextTick(); await waitForContentImages(); _scrollToHeading(decodeURIComponent(anchor)) }
+    if (!doc) return
+    // 同一文档内的锚点变化，只需滚动，无需重新加载
+    if (doc.key === currentDoc.value) {
+      if (anchor) {
+        await nextTick()
+        _scrollToHeading(decodeURIComponent(anchor))
+      } else {
+        const contentEl = document.querySelector('.content')
+        if (contentEl) contentEl.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      return
     }
+    expandParents(docsList.value, doc.key)
+    await loadDoc(doc.key, { replace: true, anchor: anchor ? decodeURIComponent(anchor) : '' })
+    if (anchor) { await nextTick(); await waitForContentImages(); _scrollToHeading(decodeURIComponent(anchor)) }
   }
 
   return {

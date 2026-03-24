@@ -127,9 +127,9 @@ function createRenderer(currentDocKey, docsList) {
     if (/^(https?|mailto|tel):/.test(decoded)) {
       return `<a href="${href}"${titleAttr} target="_blank" rel="noopener">${text}</a>`
     }
-    // 站内纯锚点
+    // 站内纯锚点：# 后的内容已是 slug 格式，无需再次 slug（避免计数器追加后缀）
     if (decoded.startsWith('#')) {
-      const anchor = slugger.slug(decoded.slice(1), false)
+      const anchor = decoded.slice(1)
       return `<a href="javascript:void(0)" data-anchor="${anchor}"${titleAttr}>${text}</a>`
     }
     // 站内 .md 文档链接
@@ -139,9 +139,9 @@ function createRenderer(currentDocKey, docsList) {
       const doc = findDocInTree(docsList, targetKey)
       if (doc) {
         const hash = docHash(doc.key)
-        const anchorSlug = anchor ? slugger.slug(anchor, false) : ''
-        const url = anchorSlug ? `/${hash}#${anchorSlug}` : `/${hash}`
-        return `<a href="${url}" data-doc-key="${doc.key}"${anchorSlug ? ` data-anchor="${anchorSlug}"` : ''}${titleAttr}>${text}</a>`
+        // anchor 已是 slug 格式，无需再次 slug
+        const url = anchor ? `/${hash}#${anchor}` : `/${hash}`
+        return `<a href="${url}" data-doc-key="${doc.key}"${anchor ? ` data-anchor="${anchor}"` : ''}${titleAttr}>${text}</a>`
       }
       return `<a href="javascript:void(0)" class="broken-link" title="文档未找到: ${decoded}">${text}</a>`
     }
@@ -170,6 +170,9 @@ async function renderMermaid() {
       element.title = '点击放大查看'
     } catch (error) {
       console.error('Mermaid 渲染失败:', error)
+      // 清理 Mermaid 渲染失败时残留在 DOM 中的错误容器
+      const errorEl = document.getElementById(element.id + '-svg')
+      if (errorEl) errorEl.remove()
       element.innerHTML = `<pre class="mermaid-error">图表渲染失败\n${error.message}</pre>`
     }
   }
