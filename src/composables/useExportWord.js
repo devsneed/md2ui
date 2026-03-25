@@ -601,6 +601,24 @@ export function useExportWord() {
                 alignment: AlignmentType.LEFT,
               },
             },
+            heading1: {
+              run: { font: 'Microsoft YaHei', size: 36, bold: true, color: '333333' },
+            },
+            heading2: {
+              run: { font: 'Microsoft YaHei', size: 32, bold: true, color: '333333' },
+            },
+            heading3: {
+              run: { font: 'Microsoft YaHei', size: 28, bold: true, color: '333333' },
+            },
+            heading4: {
+              run: { font: 'Microsoft YaHei', size: 26, bold: true, color: '333333' },
+            },
+            heading5: {
+              run: { font: 'Microsoft YaHei', size: 24, bold: true, color: '333333' },
+            },
+            heading6: {
+              run: { font: 'Microsoft YaHei', size: 22, bold: true, color: '333333' },
+            },
           },
         },
         sections: [{
