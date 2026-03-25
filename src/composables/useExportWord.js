@@ -190,15 +190,16 @@ function parseList(listEl, level = 0) {
       }
     }
 
-    const bullet = isOrdered ? `${idx + 1}. ` : '  '
-    const indent = level * 360
+    const bullet = isOrdered ? `${idx + 1}. ` : '\u2022 '
+    const baseIndent = 360
+    const indent = baseIndent + level * 360
     items.push(new Paragraph({
       children: [
-        new TextRun({ text: '  '.repeat(level) + bullet }),
+        new TextRun({ text: bullet }),
         ...textRuns,
       ],
       spacing: { before: 40, after: 40 },
-      indent: { left: indent },
+      indent: { left: indent, hanging: 240 },
     }))
 
     // 嵌套列表
@@ -354,18 +355,38 @@ async function parseDomToDocx(contentEl) {
       continue
     }
 
-    // 引用块
+    // 引用块：逐个子元素解析，保留换行结构
     if (tag === 'BLOCKQUOTE') {
-      const runs = extractTextRuns(node)
-      elements.push(new Paragraph({
-        children: runs,
-        spacing: { before: 80, after: 80 },
+      const bqStyle = {
         indent: { left: 400 },
         border: {
           left: { style: BorderStyle.SINGLE, size: 6, color: 'cccccc' },
         },
         shading: { type: ShadingType.CLEAR, fill: 'fafafa' },
-      }))
+      }
+      // 遍历 blockquote 内的子元素，每个块级元素生成独立段落
+      if (node.children.length > 0) {
+        for (const child of node.children) {
+          const runs = extractTextRuns(child)
+          if (runs.length > 0) {
+            elements.push(new Paragraph({
+              children: runs,
+              spacing: { before: 80, after: 80 },
+              ...bqStyle,
+            }))
+          }
+        }
+      } else {
+        // 没有子元素时回退到整体提取
+        const runs = extractTextRuns(node)
+        if (runs.length > 0) {
+          elements.push(new Paragraph({
+            children: runs,
+            spacing: { before: 80, after: 80 },
+            ...bqStyle,
+          }))
+        }
+      }
       continue
     }
 
