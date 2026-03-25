@@ -160,15 +160,24 @@ export function useDocManager() {
       }
       return
     }
-    // 图片放大
-    if (target.tagName === 'IMG' && target.classList.contains('zoomable-image')) {
-      onZoom(`<img src="${target.src}" alt="${target.alt || ''}" style="max-width: 100%; height: auto;" />`)
-      return
-    }
-    // Mermaid 图表放大
+    // 图片/Mermaid 放大（收集所有可放大元素，支持左右切换）
+    const isImg = target.tagName === 'IMG' && target.classList.contains('zoomable-image')
     const mermaidEl = target.closest('.mermaid')
-    if (mermaidEl && mermaidEl.classList.contains('zoomable-image')) {
-      onZoom(mermaidEl.innerHTML)
+    const isMermaid = mermaidEl && mermaidEl.classList.contains('zoomable-image')
+    if (isImg || isMermaid) {
+      const container = document.querySelector('.markdown-content')
+      if (!container) return
+      // 收集所有可放大元素
+      const allZoomable = [...container.querySelectorAll('.zoomable-image')]
+      const images = allZoomable.map(el => {
+        if (el.tagName === 'IMG') {
+          return `<img src="${el.src}" alt="${el.alt || ''}" style="max-width: 100%; height: auto;" />`
+        }
+        return el.innerHTML
+      })
+      const clickedEl = isImg ? target : mermaidEl
+      const index = allZoomable.indexOf(clickedEl)
+      onZoom({ images, index: Math.max(index, 0) })
     }
   }
 

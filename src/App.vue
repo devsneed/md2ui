@@ -78,7 +78,7 @@
       </button>
     </transition>
     <!-- 图片放大 -->
-    <ImageZoom :visible="zoomVisible" :imageContent="zoomContent" @close="zoomVisible = false" />
+    <ImageZoom :visible="zoomVisible" :images="zoomImages" :currentIndex="zoomIndex" @update:currentIndex="zoomIndex = $event" @close="zoomVisible = false" />
 
   </div>
 </template>
@@ -105,6 +105,8 @@ const sidebarCollapsed = ref(false)
 const tocCollapsed = ref(false)
 const zoomVisible = ref(false)
 const zoomContent = ref('')
+const zoomImages = ref([])
+const zoomIndex = ref(0)
 
 // composables
 const {
@@ -126,8 +128,9 @@ const { isMobile, mobileDrawerOpen, mobileTocOpen } = useMobile()
 // 内容区点击：委托给 docManager，图片放大回调在这里处理
 function onContentClick(event) {
   handleContentClick(event, {
-    onZoom(content) {
-      zoomContent.value = content
+    onZoom({ images, index }) {
+      zoomImages.value = images
+      zoomIndex.value = index
       zoomVisible.value = true
     }
   })

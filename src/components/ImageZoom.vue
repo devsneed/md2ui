@@ -23,10 +23,24 @@
             <RotateCcw :size="16" />
           </button>
           <span class="zoom-level">{{ Math.round(scale * 100) }}%</span>
+          <!-- 图片计数 -->
+          <span v-if="images.length > 1" class="image-counter">{{ currentIndex + 1 }} / {{ images.length }}</span>
           <button class="zoom-btn close-btn" @click="close" title="关闭">
             <X :size="16" />
           </button>
         </div>
+
+        <!-- 左切换按钮 -->
+        <button
+          v-if="images.length > 1"
+          class="nav-btn nav-btn-left"
+          :class="{ 'nav-btn-disabled': currentIndex <= 0 }"
+          :disabled="currentIndex <= 0"
+          @click="goPrev"
+          title="上一张"
+        >
+          <ChevronLeft :size="28" />
+        </button>
 
         <!-- 图片容器 -->
         <div
@@ -35,16 +49,28 @@
             transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
             transformOrigin: 'center center'
           }"
-          v-html="imageContent"
+          v-html="currentContent"
         ></div>
+
+        <!-- 右切换按钮 -->
+        <button
+          v-if="images.length > 1"
+          class="nav-btn nav-btn-right"
+          :class="{ 'nav-btn-disabled': currentIndex >= images.length - 1 }"
+          :disabled="currentIndex >= images.length - 1"
+          @click="goNext"
+          title="下一张"
+        >
+          <ChevronRight :size="28" />
+        </button>
       </div>
     </div>
   </teleport>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { ZoomIn, ZoomOut, RotateCcw, X } from 'lucide-vue-next'
+import { ref, computed } from 'vue'
+import { ZoomIn, ZoomOut, RotateCcw, X, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 
 // Props
 const props = defineProps({
@@ -52,14 +78,33 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  // 兼容单图模式
   imageContent: {
     type: String,
     default: ''
+  },
+  // 图片列表（多图切换）
+  images: {
+    type: Array,
+    default: () => []
+  },
+  // 当前图片索引
+  currentIndex: {
+    type: Number,
+    default: 0
   }
 })
 
 // Emits
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'update:currentIndex'])
+
+// 当前展示内容：优先使用列表模式
+const currentContent = computed(() => {
+  if (props.images.length > 0) {
+    return props.images[props.currentIndex] || ''
+  }
+  return props.imageContent
+})
 
 // 缩放和拖拽状态
 const scale = ref(1)
@@ -95,6 +140,21 @@ function resetZoom() {
   translateY.value = 0
 }
 
+// 切换图片时重置缩放
+function goPrev() {
+  if (props.currentIndex > 0) {
+    resetZoom()
+    emit('update:currentIndex', props.currentIndex - 1)
+  }
+}
+
+function goNext() {
+  if (props.currentIndex < props.images.length - 1) {
+    resetZoom()
+    emit('update:currentIndex', props.currentIndex + 1)
+  }
+}
+
 // 关闭
 function close() {
   resetZoom()
@@ -111,12 +171,9 @@ function handleOverlayClick(event) {
 // 处理滚轮缩放
 function handleWheel(event) {
   event.preventDefault()
-  
-  // 使用比例缩放，每次滚轮缩放 2%，体感更平滑
   const zoomFactor = 0.02
   const direction = event.deltaY > 0 ? -1 : 1
   const newScale = Math.max(minScale, Math.min(maxScale, scale.value * (1 + direction * zoomFactor)))
-  
   if (newScale !== scale.value) {
     scale.value = newScale
   }
@@ -124,8 +181,7 @@ function handleWheel(event) {
 
 // 处理鼠标按下
 function handleMouseDown(event) {
-  if (event.target.closest('.zoom-toolbar')) return
-  
+  if (event.target.closest('.zoom-toolbar') || event.target.closest('.nav-btn')) return
   isDragging.value = true
   lastMouseX.value = event.clientX
   lastMouseY.value = event.clientY
@@ -135,13 +191,10 @@ function handleMouseDown(event) {
 // 处理鼠标移动
 function handleMouseMove(event) {
   if (!isDragging.value) return
-  
   const deltaX = event.clientX - lastMouseX.value
   const deltaY = event.clientY - lastMouseY.value
-  
   translateX.value += deltaX
   translateY.value += deltaY
-  
   lastMouseX.value = event.clientX
   lastMouseY.value = event.clientY
 }
@@ -154,7 +207,6 @@ function handleMouseUp() {
 // 监听键盘事件
 function handleKeyDown(event) {
   if (!props.visible) return
-  
   switch (event.key) {
     case 'Escape':
       close()
@@ -169,10 +221,15 @@ function handleKeyDown(event) {
     case '0':
       resetZoom()
       break
+    case 'ArrowLeft':
+      goPrev()
+      break
+    case 'ArrowRight':
+      goNext()
+      break
   }
 }
 
-// 添加键盘监听
 if (typeof window !== 'undefined') {
   window.addEventListener('keydown', handleKeyDown)
 }
@@ -259,6 +316,53 @@ if (typeof window !== 'undefined') {
   padding: 0 8px;
   min-width: 50px;
   text-align: center;
+}
+
+.image-counter {
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+/* 左右切换按钮 */
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10000;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2d3748;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.nav-btn-disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-btn-left {
+  left: 20px;
+}
+
+.nav-btn-right {
+  right: 20px;
 }
 
 .image-wrapper {
