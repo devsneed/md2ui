@@ -3,6 +3,7 @@ import {
   Document, Packer, Paragraph, TextRun, HeadingLevel,
   Table, TableRow, TableCell, WidthType, BorderStyle,
   ImageRun, AlignmentType, ShadingType,
+  ExternalHyperlink,
   convertInchesToTwip
 } from 'docx'
 import { saveAs } from 'file-saver'
@@ -83,7 +84,7 @@ const HEADING_MAP = {
   H6: HeadingLevel.HEADING_6,
 }
 
-// 从 DOM 节点提取内联文本 runs
+// 从 DOM 节点提取内联文本 runs（支持超链接、高亮、上下标、内联图片）
 function extractTextRuns(node, inherited = {}) {
   const runs = []
   if (!node) return runs
@@ -112,16 +113,45 @@ function extractTextRuns(node, inherited = {}) {
           ...inherited,
         }))
       } else if (tag === 'A') {
-        runs.push(new TextRun({
-          text: child.textContent,
-          color: '4a6cf7',
-          underline: {},
-          ...inherited,
-        }))
+        const href = child.getAttribute('href') || ''
+        // 生成真正的可点击超链接
+        if (href && (href.startsWith('http') || href.startsWith('mailto:'))) {
+          runs.push(new ExternalHyperlink({
+            children: [new TextRun({
+              text: child.textContent,
+              style: 'Hyperlink',
+              color: '4a6cf7',
+              underline: {},
+              ...inherited,
+            })],
+            link: href,
+          }))
+        } else {
+          runs.push(new TextRun({
+            text: child.textContent,
+            color: '4a6cf7',
+            underline: {},
+            ...inherited,
+          }))
+        }
       } else if (tag === 'DEL' || tag === 'S') {
         runs.push(...extractTextRuns(child, { ...inherited, strike: true }))
+      } else if (tag === 'MARK') {
+        // 高亮文本
+        runs.push(...extractTextRuns(child, {
+          ...inherited,
+          shading: { type: ShadingType.CLEAR, fill: 'ffff00' },
+        }))
+      } else if (tag === 'SUP') {
+        runs.push(...extractTextRuns(child, { ...inherited, superScript: true }))
+      } else if (tag === 'SUB') {
+        runs.push(...extractTextRuns(child, { ...inherited, subScript: true }))
       } else if (tag === 'BR') {
         runs.push(new TextRun({ break: 1 }))
+      } else if (tag === 'IMG') {
+        // 内联图片标记为占位符（实际图片在段落级处理）
+        const alt = child.getAttribute('alt') || '[图片]'
+        runs.push(new TextRun({ text: alt, color: '999999', italics: true }))
       } else {
         runs.push(...extractTextRuns(child, inherited))
       }
@@ -175,7 +205,7 @@ function parseList(listEl, level = 0) {
     const isOrdered = listEl.tagName === 'OL'
     const idx = Array.from(listEl.children).indexOf(li)
 
-    // 提取文本（排除嵌套列表）
+    // 提取文本（排除嵌套列表，支持 li 内 p 包裹的多段落）
     const textRuns = []
     if (prefix) {
       textRuns.push(new TextRun({ text: prefix, font: 'Consolas', size: 20 }))
@@ -184,9 +214,19 @@ function parseList(listEl, level = 0) {
       if (child.nodeType === Node.TEXT_NODE) {
         const t = child.textContent.trim()
         if (t) textRuns.push(new TextRun({ text: t }))
-      } else if (child.nodeType === Node.ELEMENT_NODE && child.tagName !== 'UL' && child.tagName !== 'OL') {
-        if (child.tagName === 'INPUT') continue // 跳过 checkbox 本身
-        textRuns.push(...extractTextRuns(child))
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        const cTag = child.tagName
+        if (cTag === 'UL' || cTag === 'OL') continue // 嵌套列表单独处理
+        if (cTag === 'INPUT') continue // 跳过 checkbox 本身
+        // li 内的 p 标签：提取内容并在段落间加换行
+        if (cTag === 'P') {
+          if (textRuns.length > 0) {
+            textRuns.push(new TextRun({ break: 1 }))
+          }
+          textRuns.push(...extractTextRuns(child))
+        } else {
+          textRuns.push(...extractTextRuns(child))
+        }
       }
     }
 
@@ -229,14 +269,45 @@ async function parseDomToDocx(contentEl) {
       continue
     }
 
-    // 段落
+    // 段落（处理内嵌图片）
     if (tag === 'P') {
-      const runs = extractTextRuns(node)
-      if (runs.length > 0) {
-        elements.push(new Paragraph({
-          children: runs,
-          spacing: { before: 80, after: 80 },
-        }))
+      // 检查段落内是否有图片
+      const imgs = node.querySelectorAll('img')
+      if (imgs.length > 0) {
+        // 先输出文本部分
+        const runs = extractTextRuns(node)
+        const textOnly = runs.filter(r => !(r instanceof ImageRun))
+        if (textOnly.length > 0) {
+          elements.push(new Paragraph({
+            children: textOnly,
+            spacing: { before: 80, after: 80 },
+          }))
+        }
+        // 再逐个输出图片
+        for (const img of imgs) {
+          try {
+            const imgData = await fetchImageAsBytes(img.src)
+            if (imgData) {
+              elements.push(new Paragraph({
+                children: [new ImageRun({
+                  data: imgData.bytes,
+                  transformation: { width: imgData.width, height: imgData.height },
+                  type: 'png',
+                })],
+                spacing: { before: 120, after: 120 },
+                alignment: AlignmentType.CENTER,
+              }))
+            }
+          } catch { /* 跳过无法加载的图片 */ }
+        }
+      } else {
+        const runs = extractTextRuns(node)
+        if (runs.length > 0) {
+          elements.push(new Paragraph({
+            children: runs,
+            spacing: { before: 80, after: 80 },
+          }))
+        }
       }
       continue
     }
@@ -355,7 +426,7 @@ async function parseDomToDocx(contentEl) {
       continue
     }
 
-    // 引用块：逐个子元素解析，保留换行结构
+    // 引用块：递归处理内部块级元素，保留完整结构
     if (tag === 'BLOCKQUOTE') {
       const bqStyle = {
         indent: { left: 400 },
@@ -364,20 +435,54 @@ async function parseDomToDocx(contentEl) {
         },
         shading: { type: ShadingType.CLEAR, fill: 'fafafa' },
       }
-      // 遍历 blockquote 内的子元素，每个块级元素生成独立段落
       if (node.children.length > 0) {
         for (const child of node.children) {
-          const runs = extractTextRuns(child)
-          if (runs.length > 0) {
-            elements.push(new Paragraph({
-              children: runs,
-              spacing: { before: 80, after: 80 },
-              ...bqStyle,
-            }))
+          const childTag = child.tagName
+          // 嵌套引用块：增加缩进
+          if (childTag === 'BLOCKQUOTE') {
+            const innerChildren = child.children.length > 0 ? child.children : [child]
+            for (const inner of innerChildren) {
+              const runs = extractTextRuns(inner)
+              if (runs.length > 0) {
+                elements.push(new Paragraph({
+                  children: runs,
+                  spacing: { before: 80, after: 80 },
+                  indent: { left: 800 },
+                  border: {
+                    left: { style: BorderStyle.SINGLE, size: 6, color: 'aaaaaa' },
+                  },
+                  shading: { type: ShadingType.CLEAR, fill: 'f5f5f5' },
+                }))
+              }
+            }
+          } else if (childTag === 'UL' || childTag === 'OL') {
+            // 引用块内的列表
+            const listItems = parseList(child)
+            for (const item of listItems) {
+              elements.push(item)
+            }
+          } else if (childTag === 'PRE' || child.classList?.contains('code-block-wrapper')) {
+            // 引用块内的代码块，走正常代码块逻辑但加引用样式
+            const runs = extractTextRuns(child)
+            if (runs.length > 0) {
+              elements.push(new Paragraph({
+                children: runs,
+                spacing: { before: 80, after: 80 },
+                ...bqStyle,
+              }))
+            }
+          } else {
+            const runs = extractTextRuns(child)
+            if (runs.length > 0) {
+              elements.push(new Paragraph({
+                children: runs,
+                spacing: { before: 80, after: 80 },
+                ...bqStyle,
+              }))
+            }
           }
         }
       } else {
-        // 没有子元素时回退到整体提取
         const runs = extractTextRuns(node)
         if (runs.length > 0) {
           elements.push(new Paragraph({
