@@ -2,6 +2,12 @@
   <main class="content" @scroll="$emit('scroll', $event)" @click="$emit('content-click', $event)">
     <WelcomePage v-if="showWelcome" @start="$emit('start')" />
     <template v-else>
+      <div class="doc-toolbar">
+        <button class="export-word-btn" :disabled="exporting" @click="handleExport" title="导出为 Word 文档">
+          <FileDown :size="15" />
+          <span>{{ exporting ? '导出中...' : '导出 Word' }}</span>
+        </button>
+      </div>
       <article class="markdown-content" v-html="htmlContent"></article>
       <nav v-if="prevDoc || nextDoc" class="doc-nav">
         <a v-if="prevDoc" class="doc-nav-link prev" @click.prevent="$emit('load-doc', prevDoc.key)">
@@ -25,15 +31,23 @@
 </template>
 
 <script setup>
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, FileDown } from 'lucide-vue-next'
 import WelcomePage from './WelcomePage.vue'
+import { useExportWord } from '../composables/useExportWord.js'
 
-defineProps({
+const props = defineProps({
   showWelcome: { type: Boolean, default: true },
   htmlContent: { type: String, default: '' },
   prevDoc: { type: Object, default: null },
-  nextDoc: { type: Object, default: null }
+  nextDoc: { type: Object, default: null },
+  docTitle: { type: String, default: '文档' }
 })
 
 defineEmits(['scroll', 'content-click', 'start', 'load-doc'])
+
+const { exporting, exportToWord } = useExportWord()
+
+function handleExport() {
+  exportToWord(props.docTitle)
+}
 </script>

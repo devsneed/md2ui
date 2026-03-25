@@ -172,6 +172,13 @@ export function useDocManager() {
     }
   }
 
+  // 当前文档标题
+  const currentDocTitle = computed(() => {
+    if (!currentDoc.value) return '文档'
+    const doc = findDoc(docsList.value, currentDoc.value)
+    return doc?.label || '文档'
+  })
+
   // 上一篇/下一篇
   const prevDoc = computed(() => {
     if (!currentDoc.value) return null
@@ -248,6 +255,7 @@ export function useDocManager() {
     // 状态
     docsList,
     currentDoc,
+    currentDocTitle,
     showWelcome,
     htmlContent,
     tocItems,

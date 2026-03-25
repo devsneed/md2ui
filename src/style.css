@@ -1260,6 +1260,48 @@ body {
   color: var(--color-border);
 }
 
+/* ===== 文档工具栏 ===== */
+.doc-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 8px 32px 0;
+}
+
+.export-word-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.export-word-btn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: var(--color-accent-bg);
+}
+
+.export-word-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .doc-toolbar {
+    padding: 8px 16px 0;
+  }
+}
+
 /* ===== 上一篇/下一篇导航 ===== */
 .doc-nav {
   display: flex;

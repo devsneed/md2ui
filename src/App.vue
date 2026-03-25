@@ -46,6 +46,7 @@
       :htmlContent="htmlContent"
       :prevDoc="prevDoc"
       :nextDoc="nextDoc"
+      :docTitle="currentDocTitle"
       @scroll="handleScroll"
       @content-click="onContentClick"
       @start="loadFirstDoc"
@@ -107,7 +108,7 @@ const zoomContent = ref('')
 
 // composables
 const {
-  docsList, currentDoc, showWelcome, htmlContent, tocItems,
+  docsList, currentDoc, currentDocTitle, showWelcome, htmlContent, tocItems,
   scrollProgress, showBackToTop, activeHeading,
   handleScroll, scrollToHeading, scrollToTop,
   loadDocsList, loadFromUrl, goHome, loadDoc, loadFirstDoc,
