@@ -435,8 +435,8 @@ async function parseDomToDocx(contentEl) {
       continue
     }
 
-    // 表格（可能被 table-wrapper 包裹）
-    if (tag === 'TABLE' || node.classList?.contains('table-wrapper')) {
+    // 表格（可能被 table-outer 或 table-wrapper 包裹）
+    if (tag === 'TABLE' || node.classList?.contains('table-wrapper') || node.classList?.contains('table-outer')) {
       const tableEl = tag === 'TABLE' ? node : node.querySelector('table')
       if (tableEl) {
         const table = parseTable(tableEl)

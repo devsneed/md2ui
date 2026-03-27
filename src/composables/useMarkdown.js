@@ -178,19 +178,130 @@ async function renderMermaid() {
   }
 }
 
-// 为表格添加滚动容器
+// 为表格添加滚动容器和全屏查看按钮
 function wrapTables() {
   nextTick(() => {
     const tables = document.querySelectorAll('.markdown-content table')
     tables.forEach(table => {
-      if (!table.parentElement.classList.contains('table-wrapper')) {
-        const wrapper = document.createElement('div')
-        wrapper.className = 'table-wrapper'
-        table.parentNode.insertBefore(wrapper, table)
-        wrapper.appendChild(table)
+      // 已经处理过的跳过
+      if (table.closest('.table-outer')) return
+
+      // 检测列数，取第一行的列数（考虑 colspan）
+      const firstRow = table.querySelector('tr')
+      let colCount = 0
+      if (firstRow) {
+        for (const cell of firstRow.querySelectorAll('th, td')) {
+          colCount += parseInt(cell.getAttribute('colspan') || '1', 10)
+        }
       }
+
+      // 6列以下撑满，6列及以上按内容撑开
+      table.classList.add(colCount >= 6 ? 'table-scroll' : 'table-fit')
+
+      // 构建结构：.table-outer > .table-fullscreen-anchor + .table-wrapper > table
+      const outer = document.createElement('div')
+      outer.className = 'table-outer'
+
+      // 全屏按钮锚点（在 wrapper 外部，不受 overflow 影响）
+      const anchor = document.createElement('div')
+      anchor.className = 'table-fullscreen-anchor'
+      const btn = document.createElement('button')
+      btn.className = 'table-fullscreen-btn'
+      btn.title = '全屏查看'
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>'
+      btn.addEventListener('click', () => openTableFullscreen(table))
+      anchor.appendChild(btn)
+
+      // 滚动容器
+      const wrapper = document.createElement('div')
+      wrapper.className = 'table-wrapper'
+
+      table.parentNode.insertBefore(outer, table)
+      outer.appendChild(anchor)
+      outer.appendChild(wrapper)
+      wrapper.appendChild(table)
     })
   })
+}
+
+// 打开表格全屏弹框
+function openTableFullscreen(tableEl) {
+  // 创建遮罩
+  const overlay = document.createElement('div')
+  overlay.className = 'table-fullscreen-overlay'
+
+  // 弹框容器
+  const dialog = document.createElement('div')
+  dialog.className = 'table-fullscreen-dialog'
+
+  // 标题栏
+  const header = document.createElement('div')
+  header.className = 'table-fullscreen-header'
+
+  // 统计行列信息作为标题
+  const rowCount = tableEl.querySelectorAll('tr').length - 1
+  const firstRow = tableEl.querySelector('tr')
+  let colCount = 0
+  if (firstRow) {
+    for (const cell of firstRow.querySelectorAll('th, td')) {
+      colCount += parseInt(cell.getAttribute('colspan') || '1', 10)
+    }
+  }
+  const title = document.createElement('span')
+  title.className = 'table-fullscreen-title'
+  title.textContent = `表格预览（${rowCount} 行 × ${colCount} 列）`
+
+  const actions = document.createElement('div')
+  actions.className = 'table-fullscreen-actions'
+
+  // 全屏/还原按钮
+  const maximizeBtn = document.createElement('button')
+  maximizeBtn.className = 'table-fullscreen-action-btn'
+  maximizeBtn.title = '全屏'
+  const iconMaximize = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>'
+  const iconMinimize = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>'
+  maximizeBtn.innerHTML = iconMaximize
+  maximizeBtn.addEventListener('click', () => {
+    const isMax = dialog.classList.toggle('is-maximized')
+    maximizeBtn.innerHTML = isMax ? iconMinimize : iconMaximize
+    maximizeBtn.title = isMax ? '还原' : '全屏'
+    overlay.style.padding = isMax ? '0' : '24px'
+  })
+
+  // 关闭按钮
+  const closeBtn = document.createElement('button')
+  closeBtn.className = 'table-fullscreen-action-btn'
+  closeBtn.title = '关闭'
+  closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>'
+
+  actions.appendChild(maximizeBtn)
+  actions.appendChild(closeBtn)
+  header.appendChild(title)
+  header.appendChild(actions)
+
+  // 内容区
+  const body = document.createElement('div')
+  body.className = 'table-fullscreen-body'
+  body.appendChild(tableEl.cloneNode(true))
+
+  dialog.appendChild(header)
+  dialog.appendChild(body)
+  overlay.appendChild(dialog)
+  document.body.appendChild(overlay)
+
+  // 关闭逻辑
+  const close = () => overlay.remove()
+  closeBtn.addEventListener('click', close)
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close()
+  })
+  const onKey = (e) => {
+    if (e.key === 'Escape') {
+      close()
+      document.removeEventListener('keydown', onKey)
+    }
+  }
+  document.addEventListener('keydown', onKey)
 }
 
 // 为图片添加放大功能
