@@ -3,7 +3,7 @@ import {
   Document, Packer, Paragraph, TextRun, HeadingLevel,
   Table, TableRow, TableCell, WidthType, BorderStyle,
   ImageRun, AlignmentType, ShadingType,
-  ExternalHyperlink,
+  ExternalHyperlink, TableLayoutType,
   convertInchesToTwip
 } from 'docx'
 import { saveAs } from 'file-saver'
@@ -160,18 +160,35 @@ function extractTextRuns(node, inherited = {}) {
   return runs
 }
 
-// 解析表格
+// 解析表格（兼容 Office + WPS）
 function parseTable(tableEl) {
-  // A4 内容区宽度（缇），用 DXA 绝对单位避免 WPS 百分比兼容问题
+  // A4 内容区宽度（缇），左右页边距各 1.2 英寸，纸宽 8.27 英寸
   const TABLE_WIDTH_DXA = 9024
   const rows = []
   const allTr = tableEl.querySelectorAll('tr')
+
+  // 1. 扫描最大列数（考虑 colspan）
+  let maxCols = 0
+  for (const tr of allTr) {
+    let colCount = 0
+    for (const td of tr.querySelectorAll('th, td')) {
+      colCount += parseInt(td.getAttribute('colspan') || '1', 10)
+    }
+    maxCols = Math.max(maxCols, colCount)
+  }
+  if (maxCols === 0) return null
+
+  // 2. 每列均分宽度
+  const colWidth = Math.floor(TABLE_WIDTH_DXA / maxCols)
+
+  // 3. 构建行（处理 colspan）
   for (const tr of allTr) {
     const cells = []
     const tds = tr.querySelectorAll('th, td')
     const isHeader = tr.querySelector('th') !== null
     for (const td of tds) {
-      cells.push(new TableCell({
+      const colspan = parseInt(td.getAttribute('colspan') || '1', 10)
+      const cellOpts = {
         children: [new Paragraph({
           children: extractTextRuns(td, isHeader ? { bold: true } : {}),
           spacing: { before: 40, after: 40 },
@@ -179,17 +196,23 @@ function parseTable(tableEl) {
         shading: isHeader
           ? { type: ShadingType.CLEAR, fill: 'f0f0f0' }
           : undefined,
-        width: { size: Math.floor(TABLE_WIDTH_DXA / tds.length), type: WidthType.DXA },
-      }))
+        width: { size: colWidth * colspan, type: WidthType.DXA },
+      }
+      if (colspan > 1) cellOpts.columnSpan = colspan
+      cells.push(new TableCell(cellOpts))
     }
     if (cells.length > 0) {
       rows.push(new TableRow({ children: cells }))
     }
   }
   if (rows.length === 0) return null
+
+  // 4. FIXED 布局 + columnWidths（tblGrid），WPS 严格依赖这两项
   return new Table({
     rows,
     width: { size: TABLE_WIDTH_DXA, type: WidthType.DXA },
+    layout: TableLayoutType.FIXED,
+    columnWidths: Array(maxCols).fill(colWidth),
   })
 }
 
