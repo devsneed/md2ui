@@ -162,6 +162,8 @@ function extractTextRuns(node, inherited = {}) {
 
 // 解析表格
 function parseTable(tableEl) {
+  // A4 内容区宽度（缇），用 DXA 绝对单位避免 WPS 百分比兼容问题
+  const TABLE_WIDTH_DXA = 9024
   const rows = []
   const allTr = tableEl.querySelectorAll('tr')
   for (const tr of allTr) {
@@ -177,7 +179,7 @@ function parseTable(tableEl) {
         shading: isHeader
           ? { type: ShadingType.CLEAR, fill: 'f0f0f0' }
           : undefined,
-        width: { size: 100 / tds.length, type: WidthType.PERCENTAGE },
+        width: { size: Math.floor(TABLE_WIDTH_DXA / tds.length), type: WidthType.DXA },
       }))
     }
     if (cells.length > 0) {
@@ -187,7 +189,7 @@ function parseTable(tableEl) {
   if (rows.length === 0) return null
   return new Table({
     rows,
-    width: { size: 100, type: WidthType.PERCENTAGE },
+    width: { size: TABLE_WIDTH_DXA, type: WidthType.DXA },
   })
 }
 
