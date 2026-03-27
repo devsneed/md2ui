@@ -389,51 +389,111 @@ body {
 }
 
 /* 表格 */
-.markdown-content .table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
 
-/* 按钮容器在 wrapper 外部，不受 overflow 影响 */
-.markdown-content .table-fullscreen-anchor {
-  position: relative;
-  height: 0;
-  z-index: 2;
-}
-
-.markdown-content .table-fullscreen-btn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--color-border);
-  border-radius: 0 0 0 6px;
-  background: var(--color-bg-secondary);
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s, background 0.15s;
-  z-index: 2;
-}
-
-.markdown-content .table-outer:hover .table-fullscreen-btn {
-  opacity: 1;
-}
-
-.markdown-content .table-fullscreen-btn:hover {
-  color: var(--color-accent);
-  background: var(--color-bg);
-}
-
-/* 表格外层容器，用于统一 hover */
+/* 表格外层容器 */
 .markdown-content .table-outer {
   position: relative;
   margin-bottom: 16px;
+}
+
+/* 表格工具栏 */
+.markdown-content .table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  justify-content: flex-end;
+  padding: 2px 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 2;
+}
+
+.markdown-content .table-outer:hover .table-toolbar {
+  opacity: 1;
+}
+
+.markdown-content .table-toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.markdown-content .table-toolbar-btn:hover {
+  color: var(--color-accent);
+  background: var(--color-bg);
+  border-color: var(--color-accent);
+}
+
+.markdown-content .table-toolbar-btn.active {
+  color: var(--color-accent);
+  background: var(--color-accent-bg);
+  border-color: var(--color-accent);
+}
+
+/* 工具栏按钮 tooltip */
+.markdown-content .table-toolbar-btn[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: #1f2328;
+  color: #fff;
+  font-size: 11px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.markdown-content .table-toolbar-btn[data-tooltip]:hover::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-bottom-color: #1f2328;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* 表格滚动容器 */
+.markdown-content .table-wrapper {
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 横向滚动模式 */
+.markdown-content .table-wrapper-scroll {
+  overflow-x: auto;
+}
+
+/* 固定宽度模式：不允许横向滚动 */
+.markdown-content .table-wrapper-fixed {
+  overflow-x: hidden;
+}
+
+/* 固定高度模式：500px + 竖向滚动 */
+.markdown-content .table-wrapper-fixed-height {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* 适应高度模式：无高度限制 */
+.markdown-content .table-wrapper-auto-height {
+  max-height: none;
+  overflow-y: visible;
 }
 
 .markdown-content table {
@@ -441,15 +501,23 @@ body {
   border-spacing: 0;
 }
 
-/* 5列以下：撑满容器 */
+/* 固定宽度：撑满容器 */
 .markdown-content table.table-fit {
   width: 100%;
 }
 
-/* 5列及以上：按内容撑开，超出时触发滚动 */
+/* 横向滚动：按内容撑开 */
 .markdown-content table.table-scroll {
   width: max-content;
   min-width: 100%;
+}
+
+/* 固定高度模式下表头吸顶 */
+.markdown-content .table-wrapper-fixed-height table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-table-header-bg);
 }
 
 .markdown-content table th,

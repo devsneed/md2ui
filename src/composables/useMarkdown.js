@@ -178,7 +178,7 @@ async function renderMermaid() {
   }
 }
 
-// 为表格添加滚动容器和全屏查看按钮
+// 为表格添加滚动容器和工具栏按钮
 function wrapTables() {
   nextTick(() => {
     const tables = document.querySelectorAll('.markdown-content table')
@@ -186,42 +186,104 @@ function wrapTables() {
       // 已经处理过的跳过
       if (table.closest('.table-outer')) return
 
-      // 检测列数，取第一行的列数（考虑 colspan）
-      const firstRow = table.querySelector('tr')
-      let colCount = 0
-      if (firstRow) {
-        for (const cell of firstRow.querySelectorAll('th, td')) {
-          colCount += parseInt(cell.getAttribute('colspan') || '1', 10)
-        }
-      }
-
-      // 6列以下撑满，6列及以上按内容撑开
-      table.classList.add(colCount >= 6 ? 'table-scroll' : 'table-fit')
-
-      // 构建结构：.table-outer > .table-fullscreen-anchor + .table-wrapper > table
+      // 构建结构：.table-outer > .table-toolbar + .table-wrapper > table
       const outer = document.createElement('div')
       outer.className = 'table-outer'
 
-      // 全屏按钮锚点（在 wrapper 外部，不受 overflow 影响）
-      const anchor = document.createElement('div')
-      anchor.className = 'table-fullscreen-anchor'
-      const btn = document.createElement('button')
-      btn.className = 'table-fullscreen-btn'
-      btn.title = '全屏查看'
-      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>'
-      btn.addEventListener('click', () => openTableFullscreen(table))
-      anchor.appendChild(btn)
+      // 工具栏（在 wrapper 外部，不受 overflow 影响）
+      const toolbar = document.createElement('div')
+      toolbar.className = 'table-toolbar'
+
+      // SVG 图标定义
+      const icons = {
+        fixedWidth: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>',
+        scrollX: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/><line x1="5" y1="5" x2="5" y2="19"/></svg>',
+        fixedHeight: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>',
+        autoHeight: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 8 12 3 17 8"/><polyline points="17 16 12 21 7 16"/><line x1="12" y1="3" x2="12" y2="21"/></svg>',
+        fullscreen: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>'
+      }
+
+      // 按钮配置：[key, tooltip, icon, group]
+      // group: 'width' 互斥组, 'height' 互斥组, null 独立
+      const btnConfigs = [
+        ['fixedWidth', '固定宽度', icons.fixedWidth, 'width'],
+        ['scrollX', '横向滚动', icons.scrollX, 'width'],
+        ['fixedHeight', '固定高度', icons.fixedHeight, 'height'],
+        ['autoHeight', '适应高度', icons.autoHeight, 'height'],
+        ['fullscreen', '全屏查看', icons.fullscreen, null],
+      ]
+
+      // 当前状态：默认横向滚动 + 适应高度
+      const state = { width: 'scrollX', height: 'autoHeight' }
+
+      const buttons = {}
+
+      btnConfigs.forEach(([key, tooltip, icon, group]) => {
+        const btn = document.createElement('button')
+        btn.className = 'table-toolbar-btn'
+        btn.dataset.tooltip = tooltip
+        btn.innerHTML = icon
+
+        // 默认激活状态
+        if ((group === 'width' && state.width === key) || (group === 'height' && state.height === key)) {
+          btn.classList.add('active')
+        }
+
+        btn.addEventListener('click', () => {
+          if (key === 'fullscreen') {
+            openTableFullscreen(table)
+            return
+          }
+          // 互斥切换
+          if (group) {
+            state[group] = key
+            // 更新同组按钮状态
+            btnConfigs.filter(([, , , g]) => g === group).forEach(([k]) => {
+              buttons[k].classList.toggle('active', k === key)
+            })
+          }
+          applyTableState(outer, wrapper, table, state)
+        })
+
+        buttons[key] = btn
+        toolbar.appendChild(btn)
+      })
 
       // 滚动容器
       const wrapper = document.createElement('div')
       wrapper.className = 'table-wrapper'
 
       table.parentNode.insertBefore(outer, table)
-      outer.appendChild(anchor)
+      outer.appendChild(toolbar)
       outer.appendChild(wrapper)
       wrapper.appendChild(table)
+
+      // 应用默认状态
+      applyTableState(outer, wrapper, table, state)
     })
   })
+}
+
+// 根据状态应用表格样式
+function applyTableState(outer, wrapper, table, state) {
+  // 宽度模式
+  table.classList.remove('table-fit', 'table-scroll')
+  wrapper.classList.remove('table-wrapper-scroll', 'table-wrapper-fixed')
+  if (state.width === 'fixedWidth') {
+    table.classList.add('table-fit')
+    wrapper.classList.add('table-wrapper-fixed')
+  } else {
+    table.classList.add('table-scroll')
+    wrapper.classList.add('table-wrapper-scroll')
+  }
+
+  // 高度模式
+  wrapper.classList.remove('table-wrapper-fixed-height', 'table-wrapper-auto-height')
+  if (state.height === 'fixedHeight') {
+    wrapper.classList.add('table-wrapper-fixed-height')
+  } else {
+    wrapper.classList.add('table-wrapper-auto-height')
+  }
 }
 
 // 打开表格全屏弹框
